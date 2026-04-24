@@ -100,6 +100,6 @@ Publish your own package (`langgraph-forge-modal`, `langgraph-forge-cloudflare`,
 
 Maintainers only. See internal docs (coming with phase 9 of the plan).
 
-## Code of conduct
+## Reporting security issues
 
-This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) v2.1. Unacceptable behaviour can be reported per SECURITY.md's private-disclosure process.
+See [SECURITY.md](SECURITY.md) for the private-disclosure process.

@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    labels:
+      - dependencies
+    groups:
+      langchain:
+        patterns:
+          - "langchain*"
+          - "langgraph*"
+      dev-tools:
+        patterns:
+          - "ruff"
+          - "pyright"
+          - "pytest*"
+          - "pre-commit"
+      cloud-sdks:
+        patterns:
+          - "boto3"
+          - "bedrock-agentcore"
+          - "google-cloud-*"
+          - "azure-*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "ci"
+      include: scope
+    labels:
+      - dependencies
+      - ci
+    groups:
+      actions:
+        patterns:
+          - "*"

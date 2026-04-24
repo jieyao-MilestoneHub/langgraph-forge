@@ -1,0 +1,8 @@
+# Default owners for everything in the repo.
+# Update with real GitHub handles before the first public release.
+* @CoreNovus/maintainers
+
+# Release-critical files require explicit maintainer review.
+/pyproject.toml                   @CoreNovus/maintainers
+/.github/workflows/               @CoreNovus/maintainers
+/src/langgraph_forge/_version.py  @CoreNovus/maintainers

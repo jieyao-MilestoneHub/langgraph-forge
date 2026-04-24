@@ -1,0 +1,54 @@
+name: Provider request
+description: Request a new LLM provider option (--provider / templates/providers/).
+title: "feat(provider): "
+labels: ["enhancement", "provider"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Providers are thin template folders; adding one is a low-friction
+        contribution if `init_chat_model` already supports it.
+
+  - type: input
+    id: provider-name
+    attributes:
+      label: Provider name
+      description: "The --provider flag value (lowercase, snake_case)."
+      placeholder: "together"
+    validations:
+      required: true
+
+  - type: input
+    id: init-chat-model-id
+    attributes:
+      label: init_chat_model provider id
+      description: |
+        The string that goes into `init_chat_model(model_provider=...)`.
+        Check the langchain init_chat_model docs for supported ids.
+      placeholder: "together"
+    validations:
+      required: true
+
+  - type: input
+    id: models
+    attributes:
+      label: Suggested supervisor / specialist model ids
+      placeholder: "e.g. meta-llama/Llama-3.3-70B-Instruct-Turbo / ...-8B-..."
+    validations:
+      required: true
+
+  - type: input
+    id: env-var
+    attributes:
+      label: Required environment variable(s)
+      placeholder: "TOGETHER_API_KEY"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to open a PR adding the provider template.
+          required: false

@@ -1,0 +1,49 @@
+name: Deployment adapter request
+description: Request a new deployment target (--deploy / deploy/ + templates/deploy_fragments/).
+title: "feat(deploy): "
+labels: ["enhancement", "adapter"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, note that third-party adapters can be published as
+        separate PyPI packages without changes to this repo (see
+        README "Extending: writing a new deployment adapter"). File here
+        only if you want the adapter in-tree.
+
+  - type: input
+    id: target-name
+    attributes:
+      label: Deployment target
+      description: "The --deploy flag value (lowercase)."
+      placeholder: "modal"
+    validations:
+      required: true
+
+  - type: textarea
+    id: integration
+    attributes:
+      label: Integration approach
+      description: |
+        How does the target accept a compiled LangGraph? Reference the
+        vendor docs (registration API, runtime container, SDK entrypoint).
+    validations:
+      required: true
+
+  - type: input
+    id: required-extras
+    attributes:
+      label: Required Python packages
+      placeholder: "modal>=0.64"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to open a PR adding the adapter.
+          required: false
+        - label: This adapter should live out-of-tree (a separate PyPI package).
+          required: false
