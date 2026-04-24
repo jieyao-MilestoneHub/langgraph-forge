@@ -120,3 +120,34 @@ class TestReturnValue:
         )
 
         assert {p.name for p in written} == {"greeting.txt", "static.md", "nested.py"}
+
+
+class TestPathSegmentRendering:
+    def test_directory_name_rendered_through_jinja(self, tmp_path: Path) -> None:
+        src = tmp_path / "src"
+        pkg_dir = src / "{{ package_name }}"
+        pkg_dir.mkdir(parents=True)
+        (pkg_dir / "module.py.j2").write_text("# {{ project_name }}\n", encoding="utf-8")
+
+        target = tmp_path / "out"
+        render_project(
+            target_dir=target,
+            template_sources=[src],
+            context={"package_name": "my_app", "project_name": "demo"},
+        )
+
+        assert (target / "my_app" / "module.py").exists()
+
+    def test_filename_rendered_through_jinja(self, tmp_path: Path) -> None:
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "{{ package_name }}.py.j2").write_text("pass\n", encoding="utf-8")
+
+        target = tmp_path / "out"
+        render_project(
+            target_dir=target,
+            template_sources=[src],
+            context={"package_name": "my_app"},
+        )
+
+        assert (target / "my_app.py").exists()
