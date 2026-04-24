@@ -5,7 +5,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/langgraph-forge.svg)](https://pypi.org/project/langgraph-forge/)
 [![PyPI - Python Versions](https://img.shields.io/pypi/pyversions/langgraph-forge.svg)](https://pypi.org/project/langgraph-forge/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![CI](https://github.com/CoreNovus/langgraph-forge/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/CoreNovus/langgraph-forge/actions/workflows/ci.yml)
+[![CI](https://github.com/jieyao-MilestoneHub/langgraph-forge/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/jieyao-MilestoneHub/langgraph-forge/actions/workflows/ci.yml)
 
 ## Why?
 

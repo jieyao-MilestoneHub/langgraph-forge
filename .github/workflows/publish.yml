@@ -63,7 +63,7 @@ jobs:
           print-hash: true
           # No password / API token -- trusted publishing uses the
           # OIDC id-token from GitHub Actions. PyPI project must be
-          # configured with repo=CoreNovus/langgraph-forge,
+          # configured with repo=jieyao-MilestoneHub/langgraph-forge,
           # workflow=publish.yml, environment=pypi.
 
   release-notes:

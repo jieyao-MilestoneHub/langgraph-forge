@@ -10,7 +10,7 @@ from langgraph_forge.deploy.base import AdapterConfig
 _V02_MESSAGE = (
     "AzureAIAgentAdapter is a v0.1 contract stub; the concrete Azure "
     "integration lands in v0.2. Track the work or contribute at "
-    "https://github.com/CoreNovus/langgraph-forge/issues."
+    "https://github.com/jieyao-MilestoneHub/langgraph-forge/issues."
 )
 
 

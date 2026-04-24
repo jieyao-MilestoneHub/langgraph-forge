@@ -9,7 +9,7 @@ Thanks for wanting to help. This doc captures the project's engineering conventi
 # Windows (PowerShell):   irm https://astral.sh/uv/install.ps1 | iex
 # macOS / Linux:          curl -LsSf https://astral.sh/uv/install.sh | sh
 
-git clone https://github.com/CoreNovus/langgraph-forge.git
+git clone https://github.com/jieyao-MilestoneHub/langgraph-forge.git
 cd langgraph-forge
 uv sync --dev
 uv run pre-commit install --hook-type pre-commit --hook-type commit-msg

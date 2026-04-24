@@ -17,7 +17,7 @@ Once `1.0.0` ships, the policy moves to current minor + previous minor.
 **Do not open a public GitHub issue for security bugs.**
 
 Report privately through GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
-feature on the `CoreNovus/langgraph-forge` repository, under the
+feature on the `jieyao-MilestoneHub/langgraph-forge` repository, under the
 **Security** tab.
 
 Include:

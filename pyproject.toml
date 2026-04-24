@@ -79,11 +79,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/CoreNovus/langgraph-forge"
-Documentation = "https://github.com/CoreNovus/langgraph-forge#readme"
-Repository = "https://github.com/CoreNovus/langgraph-forge"
-Issues = "https://github.com/CoreNovus/langgraph-forge/issues"
-Changelog = "https://github.com/CoreNovus/langgraph-forge/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/jieyao-MilestoneHub/langgraph-forge"
+Documentation = "https://github.com/jieyao-MilestoneHub/langgraph-forge#readme"
+Repository = "https://github.com/jieyao-MilestoneHub/langgraph-forge"
+Issues = "https://github.com/jieyao-MilestoneHub/langgraph-forge/issues"
+Changelog = "https://github.com/jieyao-MilestoneHub/langgraph-forge/blob/main/CHANGELOG.md"
 
 [project.scripts]
 langgraph-forge = "langgraph_forge.scaffold.cli:app"
