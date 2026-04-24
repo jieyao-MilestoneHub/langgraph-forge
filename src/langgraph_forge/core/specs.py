@@ -7,10 +7,11 @@ Mutating a spec after construction is a bug.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing_extensions import Self
 
 
 class ModelSpec(BaseModel):
@@ -47,3 +48,51 @@ class SpecialistSpec(BaseModel):
     prompt: str
     model: ModelSpec
     tools: list[BaseTool] = Field(default_factory=list)
+
+
+class MCPServerConfig(BaseModel):
+    """Connection details for one MCP server.
+
+    Mirrors the dict shape accepted by
+    :class:`langchain_mcp_adapters.client.MultiServerMCPClient`, plus
+    cross-field validation that rules out nonsensical combinations
+    (stdio + url, network transport + command) before a subprocess or
+    network call is attempted.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    transport: Literal["stdio", "sse", "streamable_http"]
+    command: str | None = None
+    args: list[str] = Field(default_factory=list)
+    url: str | None = None
+    env: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _validate_transport_fields(self) -> Self:
+        if self.transport == "stdio":
+            if self.command is None:
+                raise ValueError("transport=stdio requires `command`")
+            if self.url is not None:
+                raise ValueError("transport=stdio does not accept `url`")
+        else:  # sse or streamable_http
+            if self.url is None:
+                raise ValueError(f"transport={self.transport} requires `url`")
+            if self.command is not None:
+                raise ValueError(
+                    f"transport={self.transport} does not accept `command`"
+                )
+        return self
+
+
+class MCPConfig(BaseModel):
+    """Aggregate configuration for all MCP servers an agent may reach.
+
+    Maps a caller-chosen logical name (used in logs and allowlists) to
+    a :class:`MCPServerConfig`. The mapping is frozen: to change the
+    topology, construct a new MCPConfig.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    servers: dict[str, MCPServerConfig]
