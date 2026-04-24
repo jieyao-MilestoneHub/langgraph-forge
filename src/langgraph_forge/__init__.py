@@ -26,8 +26,10 @@ from langgraph_forge.core.specs import (
 )
 from langgraph_forge.core.state import ForgeState
 from langgraph_forge.deploy import DeploymentAdapter, DirectAdapter
+from langgraph_forge.deploy.base import AdapterConfig
 
 __all__ = [
+    "AdapterConfig",
     "BaseTool",
     "Command",
     "DeploymentAdapter",

@@ -103,10 +103,9 @@ path = "src/langgraph_forge/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/langgraph_forge"]
-
-[tool.hatch.build.targets.wheel.shared-data]
-# PEP 561 marker + Jinja2 templates shipped in the wheel.
-"src/langgraph_forge/py.typed" = "langgraph_forge/py.typed"
+# Hatchling includes every file under the package root by default, so
+# py.typed and the Jinja2 templates under scaffold/templates/ end up
+# inside the wheel automatically; no explicit include is needed.
 
 [tool.hatch.build.targets.sdist]
 include = [
