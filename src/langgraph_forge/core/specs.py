@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -28,3 +29,21 @@ class ModelSpec(BaseModel):
     provider: str
     temperature: float = 0.2
     extra: dict[str, Any] = Field(default_factory=dict)
+
+
+class SpecialistSpec(BaseModel):
+    """Declarative specification of one worker agent in a supervisor graph.
+
+    Passed to :func:`langgraph_forge.builders.supervisor.create_supervisor_agent`,
+    which turns each spec into a ReAct worker with the given model, tools,
+    and system prompt. The ``name`` is the routing key the supervisor LLM
+    uses (``delegate_to_<name>``) so it must be a valid Python-identifier-
+    shaped token.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
+
+    name: str = Field(..., pattern=r"^[a-z][a-z0-9_]{0,63}$")
+    prompt: str
+    model: ModelSpec
+    tools: list[BaseTool] = Field(default_factory=list)
