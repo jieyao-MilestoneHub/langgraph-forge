@@ -58,18 +58,33 @@ def _render_source(
     written: list[Path] = []
     for rel_path in _walk_files(source):
         src_file = source / rel_path
-        if rel_path.suffix == ".j2":
+        rendered_rel = _render_path(rel_path, env, context)
+
+        if rendered_rel.suffix == ".j2":
             template = env.get_template(rel_path.as_posix())
             content_str = template.render(**context)
-            dest = target_dir / rel_path.with_suffix("")
+            dest = target_dir / rendered_rel.with_suffix("")
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(content_str, encoding="utf-8")
         else:
-            dest = target_dir / rel_path
+            dest = target_dir / rendered_rel
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(src_file.read_bytes())
         written.append(dest)
     return written
+
+
+def _render_path(rel_path: Path, env: Environment, context: dict[str, Any]) -> Path:
+    """Render each segment of ``rel_path`` through Jinja2.
+
+    Literal segments (no ``{{ }}``) pass through unchanged because
+    ``from_string`` on a literal is an identity transform; we pay
+    microseconds per segment but get consistent behaviour.
+    """
+    rendered_parts = [
+        env.from_string(part).render(**context) for part in rel_path.parts
+    ]
+    return Path(*rendered_parts)
 
 
 def _walk_files(root: Path) -> list[Path]:
