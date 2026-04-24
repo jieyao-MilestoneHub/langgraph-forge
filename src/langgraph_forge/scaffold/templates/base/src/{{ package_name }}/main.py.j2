@@ -1,0 +1,21 @@
+"""Entrypoint: ``python -m {{ package_name }}``.
+
+Builds the graph and prints its shape. Set provider credentials in
+``.env`` and extend this script to call ADAPTER.invoke for real traffic.
+"""
+
+from __future__ import annotations
+
+from {{ package_name }}.deploy import ADAPTER
+from {{ package_name }}.graph import build_graph
+
+
+def main() -> None:
+    graph = build_graph()
+    print(f"Compiled graph: {type(graph).__name__}")
+    print(f"Deployment adapter: {ADAPTER.name}")
+    print("Graph is ready; edit main.py to invoke it.")
+
+
+if __name__ == "__main__":
+    main()

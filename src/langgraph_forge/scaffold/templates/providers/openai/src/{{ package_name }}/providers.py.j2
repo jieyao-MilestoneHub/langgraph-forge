@@ -1,0 +1,22 @@
+"""OpenAI LLM provider configuration for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langchain_core.language_models import BaseChatModel
+
+from langgraph_forge import ModelSpec, get_model
+
+SUPERVISOR_MODEL = "gpt-4o"
+SPECIALIST_MODEL = "gpt-4o-mini"
+
+
+def supervisor_model_spec() -> ModelSpec:
+    return ModelSpec(model=SUPERVISOR_MODEL, provider="openai")
+
+
+def specialist_model_spec() -> ModelSpec:
+    return ModelSpec(model=SPECIALIST_MODEL, provider="openai")
+
+
+def get_supervisor_model() -> BaseChatModel:
+    return get_model(supervisor_model_spec())

@@ -1,0 +1,20 @@
+"""Smoke test: build_graph compiles without calling the real LLM."""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
+
+
+def test_build_graph_returns_compiled_graph() -> None:
+    # Patch the library's single init_chat_model call site. The
+    # generated provider module goes through langgraph_forge.get_model,
+    # which goes through langgraph_forge.builders.llm.init_chat_model.
+    with patch(
+        "langgraph_forge.builders.llm.init_chat_model",
+        return_value=MagicMock(),
+    ):
+        from {{ package_name }}.graph import build_graph
+
+        graph = build_graph()
+
+    assert graph is not None

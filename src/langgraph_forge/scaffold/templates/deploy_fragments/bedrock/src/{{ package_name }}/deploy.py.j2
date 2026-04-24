@@ -1,0 +1,26 @@
+"""Deployment adapter selection for {{ project_name }}.
+
+AWS Bedrock AgentCore Runtime. Requires:
+
+    pip install langgraph-forge[bedrock]
+
+Per-adapter configuration (region, agent_id, session_identity) is
+passed through :class:`AdapterConfig.extra` at ``prepare`` time::
+
+    from langgraph_forge import AdapterConfig
+    config = AdapterConfig(
+        project_name="{{ project_name }}",
+        extra={"region": "us-west-2"},
+    )
+    deployable = ADAPTER.prepare(graph, config)
+
+Note: v0.1 ships the Protocol contract only; concrete AWS integration
+lands in v0.2 -- calling ``prepare`` / ``invoke`` raises
+``NotImplementedError`` until then.
+"""
+
+from __future__ import annotations
+
+from langgraph_forge.deploy.bedrock import BedrockAgentCoreAdapter as Adapter
+
+ADAPTER = Adapter()

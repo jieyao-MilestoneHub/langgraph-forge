@@ -1,0 +1,26 @@
+"""Anthropic LLM provider configuration for {{ project_name }}.
+
+Edit the model names here to change which Claude variant the supervisor
+and specialists use.
+"""
+
+from __future__ import annotations
+
+from langchain_core.language_models import BaseChatModel
+
+from langgraph_forge import ModelSpec, get_model
+
+SUPERVISOR_MODEL = "claude-opus-4-7"
+SPECIALIST_MODEL = "claude-haiku-4-5"
+
+
+def supervisor_model_spec() -> ModelSpec:
+    return ModelSpec(model=SUPERVISOR_MODEL, provider="anthropic")
+
+
+def specialist_model_spec() -> ModelSpec:
+    return ModelSpec(model=SPECIALIST_MODEL, provider="anthropic")
+
+
+def get_supervisor_model() -> BaseChatModel:
+    return get_model(supervisor_model_spec())

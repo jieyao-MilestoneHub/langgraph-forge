@@ -1,0 +1,23 @@
+"""Compile a single ReAct agent for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import create_single_agent
+
+from {{ package_name }}.providers import get_supervisor_model
+
+SYSTEM_PROMPT = (
+    "You are a helpful assistant with access to tools. Use them when "
+    "the user's question cannot be answered from your own knowledge."
+)
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled single-agent graph."""
+    return create_single_agent(
+        model=get_supervisor_model(),
+        tools=[],
+        prompt=SYSTEM_PROMPT,
+    )

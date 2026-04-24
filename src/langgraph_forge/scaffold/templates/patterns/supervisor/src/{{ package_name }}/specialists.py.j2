@@ -1,0 +1,30 @@
+"""Specialist declarations for the supervisor pattern.
+
+Each ``SpecialistSpec`` becomes one ReAct worker under the supervisor.
+Add, remove, or re-configure specialists here without touching graph.py.
+"""
+
+from __future__ import annotations
+
+from langgraph_forge import SpecialistSpec
+
+from {{ package_name }}.providers import specialist_model_spec
+
+SPECIALISTS: list[SpecialistSpec] = [
+    SpecialistSpec(
+        name="researcher",
+        prompt=(
+            "You are a research specialist. Given a question, collect "
+            "relevant facts and return a concise, cited summary."
+        ),
+        model=specialist_model_spec(),
+    ),
+    SpecialistSpec(
+        name="summariser",
+        prompt=(
+            "You are a summarisation specialist. Given research output, "
+            "produce a three-sentence executive summary."
+        ),
+        model=specialist_model_spec(),
+    ),
+]

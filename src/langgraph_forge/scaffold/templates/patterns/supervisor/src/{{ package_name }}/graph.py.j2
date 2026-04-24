@@ -1,0 +1,25 @@
+"""Compile a supervisor graph for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import create_supervisor_agent
+
+from {{ package_name }}.providers import get_supervisor_model
+from {{ package_name }}.specialists import SPECIALISTS
+
+SUPERVISOR_PROMPT = (
+    "You are a supervisor orchestrating specialist workers. "
+    "Delegate each step to the specialist best suited for it and "
+    "synthesise their outputs into a coherent response."
+)
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled supervisor graph, ready for adapter.invoke."""
+    return create_supervisor_agent(
+        supervisor_model=get_supervisor_model(),
+        specialists=SPECIALISTS,
+        supervisor_prompt=SUPERVISOR_PROMPT,
+    )

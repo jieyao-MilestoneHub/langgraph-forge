@@ -1,0 +1,22 @@
+"""Google (Gemini / Vertex AI) LLM provider configuration for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langchain_core.language_models import BaseChatModel
+
+from langgraph_forge import ModelSpec, get_model
+
+SUPERVISOR_MODEL = "gemini-2.0-pro"
+SPECIALIST_MODEL = "gemini-2.0-flash"
+
+
+def supervisor_model_spec() -> ModelSpec:
+    return ModelSpec(model=SUPERVISOR_MODEL, provider="google_genai")
+
+
+def specialist_model_spec() -> ModelSpec:
+    return ModelSpec(model=SPECIALIST_MODEL, provider="google_genai")
+
+
+def get_supervisor_model() -> BaseChatModel:
+    return get_model(supervisor_model_spec())

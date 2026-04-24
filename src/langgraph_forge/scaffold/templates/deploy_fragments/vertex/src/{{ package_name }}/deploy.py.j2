@@ -1,0 +1,19 @@
+"""Deployment adapter selection for {{ project_name }}.
+
+GCP Vertex AI Agent Engine. Requires:
+
+    pip install langgraph-forge[vertex]
+
+Per-adapter configuration (project, location, reasoning_engine_id) is
+passed through :class:`AdapterConfig.extra` at ``prepare`` time.
+
+Note: v0.1 ships the Protocol contract only; concrete GCP integration
+lands in v0.2 -- calling ``prepare`` / ``invoke`` raises
+``NotImplementedError`` until then.
+"""
+
+from __future__ import annotations
+
+from langgraph_forge.deploy.vertex import VertexAgentEngineAdapter as Adapter
+
+ADAPTER = Adapter()

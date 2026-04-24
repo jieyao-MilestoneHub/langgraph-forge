@@ -1,0 +1,17 @@
+"""Deployment adapter selection for {{ project_name }}.
+
+Direct mode: the graph runs in this process (self-hosted / FastAPI /
+Lambda / langgraph-cli dev server). No remote registration.
+
+Swap to a managed runtime without touching graph.py or specialists.py:
+
+    # from langgraph_forge.deploy.bedrock import BedrockAgentCoreAdapter as Adapter
+    # from langgraph_forge.deploy.vertex import VertexAgentEngineAdapter as Adapter
+    # from langgraph_forge.deploy.azure import AzureAIAgentAdapter as Adapter
+"""
+
+from __future__ import annotations
+
+from langgraph_forge.deploy.direct import DirectAdapter as Adapter
+
+ADAPTER = Adapter()

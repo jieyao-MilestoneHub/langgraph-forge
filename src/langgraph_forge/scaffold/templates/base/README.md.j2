@@ -1,0 +1,44 @@
+# {{ project_name }}
+
+Scaffolded with [langgraph-forge](https://pypi.org/project/langgraph-forge/).
+
+| Aspect | Value |
+|---|---|
+| Pattern | `{{ pattern }}` |
+| Provider | `{{ provider }}` |
+| Deployment | `{{ deploy }}` |
+
+## Quickstart
+
+```bash
+# 1. Install (prefer uv)
+uv sync --extra dev
+
+# 2. Set credentials (copy and edit)
+cp .env.example .env
+
+# 3. Verify the graph compiles
+uv run pytest tests/unit -q
+
+# 4. Run
+uv run python -m {{ package_name }}
+```
+
+## Changing deployment target
+
+`src/{{ package_name }}/deploy.py` picks the adapter. Swap one import line
+to migrate without touching graph.py or specialists.py:
+
+```python
+# Direct (local / self-hosted LangGraph):
+from langgraph_forge.deploy.direct import DirectAdapter as Adapter
+
+# AWS Bedrock AgentCore Runtime:
+# from langgraph_forge.deploy.bedrock import BedrockAgentCoreAdapter as Adapter
+
+# GCP Vertex Agent Engine:
+# from langgraph_forge.deploy.vertex import VertexAgentEngineAdapter as Adapter
+
+# Azure AI Agent Service:
+# from langgraph_forge.deploy.azure import AzureAIAgentAdapter as Adapter
+```

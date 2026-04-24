@@ -1,0 +1,36 @@
+"""AWS Bedrock LLM provider configuration for {{ project_name }}.
+
+Note: this is the provider for the LLM call itself. Deploying the
+compiled graph to Bedrock AgentCore Runtime is a separate choice --
+see ``deploy.py``.
+"""
+
+from __future__ import annotations
+
+from langchain_core.language_models import BaseChatModel
+
+from langgraph_forge import ModelSpec, get_model
+
+SUPERVISOR_MODEL = "anthropic.claude-opus-4-7"
+SPECIALIST_MODEL = "anthropic.claude-haiku-4-5"
+AWS_REGION = "us-west-2"
+
+
+def supervisor_model_spec() -> ModelSpec:
+    return ModelSpec(
+        model=SUPERVISOR_MODEL,
+        provider="bedrock_converse",
+        extra={"region_name": AWS_REGION},
+    )
+
+
+def specialist_model_spec() -> ModelSpec:
+    return ModelSpec(
+        model=SPECIALIST_MODEL,
+        provider="bedrock_converse",
+        extra={"region_name": AWS_REGION},
+    )
+
+
+def get_supervisor_model() -> BaseChatModel:
+    return get_model(supervisor_model_spec())
