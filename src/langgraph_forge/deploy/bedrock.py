@@ -32,6 +32,7 @@ class BedrockAgentCoreAdapter:
 
     name: ClassVar[str] = "bedrock"
     requires_extras: ClassVar[tuple[str, ...]] = ("boto3", "bedrock-agentcore")
+    is_stub: ClassVar[bool] = True
 
     def prepare(self, graph: Any, config: AdapterConfig) -> Any:  # noqa: ARG002
         raise NotImplementedError(_V02_MESSAGE)
