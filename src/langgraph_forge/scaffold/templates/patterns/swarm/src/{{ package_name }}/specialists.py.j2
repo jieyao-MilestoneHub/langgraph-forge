@@ -1,0 +1,48 @@
+"""Swarm specialist declarations.
+
+Each specialist holds the turn until it issues a `transfer_to_<peer>`
+tool call. The package does not auto-inject these tools (which agent
+may hand off to which is a domain decision); declare them here so
+the spec is explicit about the swarm's communication topology.
+"""
+
+from __future__ import annotations
+
+from langgraph_swarm import create_handoff_tool
+
+from langgraph_forge import SpecialistSpec
+
+from {{ package_name }}.providers import specialist_model_spec
+
+# Edit these or add more specialists. For each pair you want to allow
+# to hand off, attach the matching transfer tool to the source
+# specialist's `tools` list.
+to_summariser = create_handoff_tool(
+    agent_name="summariser",
+    description="Hand off to the summariser once research is complete.",
+)
+to_researcher = create_handoff_tool(
+    agent_name="researcher",
+    description="Hand off back to the researcher to dig deeper.",
+)
+
+SPECIALISTS = [
+    SpecialistSpec(
+        name="researcher",
+        prompt=(
+            "You research a topic and gather citations. When you have "
+            "enough material, hand off to the summariser."
+        ),
+        model=specialist_model_spec(),
+        tools=[to_summariser],
+    ),
+    SpecialistSpec(
+        name="summariser",
+        prompt=(
+            "You produce a short executive summary from research output. "
+            "Hand off back to the researcher if more depth is needed."
+        ),
+        model=specialist_model_spec(),
+        tools=[to_researcher],
+    ),
+]

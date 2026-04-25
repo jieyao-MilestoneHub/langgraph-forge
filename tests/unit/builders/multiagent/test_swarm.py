@@ -27,9 +27,7 @@ class TestCreateSwarmAgentComposition:
     def test_each_specialist_routed_through_specialist_to_node(self) -> None:
         spec = MultiAgentSpec(specialists=[_spec("a"), _spec("b")])
         with (
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.specialist_to_node"
-            ) as mock_node,
+            patch("langgraph_forge.builders.multiagent.swarm.specialist_to_node") as mock_node,
             patch("langgraph_forge.builders.multiagent.swarm.create_swarm"),
         ):
             create_swarm_agent(spec, default_active_agent="a")
@@ -44,9 +42,7 @@ class TestCreateSwarmAgentComposition:
                 "langgraph_forge.builders.multiagent.swarm.specialist_to_node",
                 side_effect=workers,
             ),
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.create_swarm"
-            ) as mock_swarm,
+            patch("langgraph_forge.builders.multiagent.swarm.create_swarm") as mock_swarm,
         ):
             create_swarm_agent(spec, default_active_agent="a")
 
@@ -57,9 +53,7 @@ class TestCreateSwarmAgentComposition:
         spec = MultiAgentSpec(specialists=[_spec("a")])
         with (
             patch("langgraph_forge.builders.multiagent.swarm.specialist_to_node"),
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.create_swarm"
-            ) as mock_swarm,
+            patch("langgraph_forge.builders.multiagent.swarm.create_swarm") as mock_swarm,
         ):
             create_swarm_agent(spec, default_active_agent="a")
 
@@ -75,9 +69,7 @@ class TestStateSchemaDispatch:
         spec = MultiAgentSpec(specialists=[_spec("a")])
         with (
             patch("langgraph_forge.builders.multiagent.swarm.specialist_to_node"),
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.create_swarm"
-            ) as mock_swarm,
+            patch("langgraph_forge.builders.multiagent.swarm.create_swarm") as mock_swarm,
         ):
             create_swarm_agent(spec, default_active_agent="a")
 
@@ -96,9 +88,7 @@ class TestStateSchemaDispatch:
         )
         with (
             patch("langgraph_forge.builders.multiagent.swarm.specialist_to_node"),
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.create_swarm"
-            ) as mock_swarm,
+            patch("langgraph_forge.builders.multiagent.swarm.create_swarm") as mock_swarm,
         ):
             create_swarm_agent(spec, default_active_agent="a")
 
@@ -119,9 +109,7 @@ class TestStateSchemaDispatch:
         )
         with (
             patch("langgraph_forge.builders.multiagent.swarm.specialist_to_node"),
-            patch(
-                "langgraph_forge.builders.multiagent.swarm.create_swarm"
-            ) as mock_swarm,
+            patch("langgraph_forge.builders.multiagent.swarm.create_swarm") as mock_swarm,
         ):
             create_swarm_agent(spec, default_active_agent="a")
 

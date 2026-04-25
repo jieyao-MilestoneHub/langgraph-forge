@@ -22,8 +22,11 @@ class TestSwarmStateShape:
         # TypedDict subclasses at runtime are all `dict`, so issubclass
         # is not the right check. __orig_bases__ records the declared
         # parent and persists the boundary doc's "extend the base, don't
-        # replace it" idiom for swarm users.
-        assert ForgeState in SwarmState.__orig_bases__
+        # replace it" idiom for swarm users. getattr is used because
+        # pyright does not surface __orig_bases__ on TypedDict subclasses
+        # at the type level (it exists at runtime).
+        orig_bases = getattr(SwarmState, "__orig_bases__", ())
+        assert ForgeState in orig_bases
 
     def test_instantiation_accepts_active_agent(self) -> None:
         # TypedDict at runtime is just a dict; smoke-test the round trip.

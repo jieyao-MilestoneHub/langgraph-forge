@@ -36,6 +36,7 @@ class Pattern(StrEnum):
 
     single = "single"
     supervisor = "supervisor"
+    swarm = "swarm"
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,21 @@
+"""Compile a swarm graph for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import MultiAgentSpec, create_swarm_agent
+
+from {{ package_name }}.specialists import SPECIALISTS
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled swarm graph, ready for adapter.invoke.
+
+    In a swarm, each specialist holds the turn until it issues a
+    `transfer_to_<peer>` tool call. ``default_active_agent`` is who
+    starts; once the run is rolling, the ``active_agent`` channel in
+    SwarmState routes each step.
+    """
+    spec = MultiAgentSpec(specialists=SPECIALISTS)
+    return create_swarm_agent(spec, default_active_agent="researcher")

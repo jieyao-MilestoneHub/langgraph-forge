@@ -84,6 +84,7 @@ class TestMultipleCombinations:
             ("supervisor", "bedrock", "bedrock"),
             ("supervisor", "google", "vertex"),
             ("single", "grok", "direct"),
+            ("swarm", "anthropic", "direct"),
         ],
     )
     def test_combination_scaffolds_successfully(
