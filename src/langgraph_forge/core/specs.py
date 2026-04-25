@@ -219,6 +219,43 @@ class TeamSpec(BaseModel):
     specialists: list[SpecialistSpec]
 
 
+class RouteSpec(BaseModel):
+    """One routing destination in a router pattern.
+
+    Maps a name + description (used by the classifier to decide when
+    to pick this route) to a target specialist that handles the
+    request. Used inside :class:`RouterSpec`.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(..., pattern=r"^[a-z][a-z0-9_]{0,63}$")
+    description: str
+    target: SpecialistSpec
+
+
+class RouterSpec(BaseModel):
+    """Configuration for the router pattern.
+
+    Router sends each incoming request to **one** specialist via a
+    classifier (an LLM with route descriptions in its prompt, or a
+    deterministic ``Callable[[State], str]``). After the chosen
+    specialist runs, control returns to END -- there is no looping
+    back to the classifier.
+
+    The classifier itself rides as a factory kwarg; this spec
+    declares what the classifier is choosing among.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
+
+    routes: list[RouteSpec]
+    default_route: str | None = None  # fallback when classifier returns unknown name
+    checkpointer: BaseCheckpointSaver | None = None
+    interrupt_before: tuple[str, ...] = ()
+    interrupt_after: tuple[str, ...] = ()
+
+
 @dataclass(frozen=True, slots=True)
 class ThreadConfig:
     """Typed wrapper around the LangGraph runtime configurable dict.
