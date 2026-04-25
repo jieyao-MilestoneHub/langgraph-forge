@@ -68,7 +68,8 @@ def list_deploy() -> None:
     """List every registered deployment adapter (first- and third-party)."""
     for name, cls in sorted(discover_adapters().items()):
         extras = ",".join(cls.requires_extras) or "-"
-        typer.echo(f"{name}  extras={extras}")
+        suffix = "  (stub — runtime planned for v0.2)" if getattr(cls, "is_stub", False) else ""
+        typer.echo(f"{name}  extras={extras}{suffix}")
 
 
 @app.command()
@@ -123,6 +124,16 @@ def init(
         raise typer.Exit(code=1)
 
     adapter_cls = adapters[deploy]
+
+    if getattr(adapter_cls, "is_stub", False):
+        typer.echo(
+            f"Note: adapter {deploy!r} is a v0.2-planned stub. The scaffolded "
+            f"deploy.py will import successfully and graph compilation works, "
+            f"but ADAPTER.prepare()/invoke() raises NotImplementedError until "
+            f"the runtime ships. Use --deploy direct for a fully functional "
+            f"reference.",
+            err=True,
+        )
 
     sources = [
         _TEMPLATE_ROOT / "base",
