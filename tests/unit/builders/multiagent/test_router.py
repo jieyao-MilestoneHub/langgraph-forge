@@ -184,3 +184,50 @@ class TestCompileForwarding:
         _, kwargs = mock_builder.compile.call_args
         assert kwargs["interrupt_before"] == ["billing"]
         assert kwargs["interrupt_after"] == ["tech"]
+
+
+class TestStateSchemaForwarding:
+    def test_default_state_schema_constructs_state_graph_with_router_state(self) -> None:
+        # When the user does not supply state_schema, the spec validator
+        # fills RouterState; the factory must hand that to StateGraph.
+        spec = RouterSpec(routes=[_route()])
+        mock_state_graph_class = MagicMock()
+        mock_builder = MagicMock()
+        mock_state_graph_class.return_value = mock_builder
+        with (
+            patch(
+                "langgraph_forge.builders.multiagent.router.StateGraph",
+                mock_state_graph_class,
+            ),
+            patch(
+                "langgraph_forge.builders.multiagent.router.specialist_to_node",
+                return_value=MagicMock(),
+            ),
+        ):
+            create_router_agent(spec, classifier=lambda state: "billing")
+
+        mock_state_graph_class.assert_called_once_with(RouterState)
+
+    def test_user_state_schema_subclass_constructs_state_graph_with_subclass(self) -> None:
+        # Mirrors swarm.py:50 -- a user-supplied subclass must reach
+        # StateGraph untouched so the extra channels survive compile.
+        class CustomRouterState(RouterState):
+            risk_level: str
+
+        spec = RouterSpec(routes=[_route()], state_schema=CustomRouterState)
+        mock_state_graph_class = MagicMock()
+        mock_builder = MagicMock()
+        mock_state_graph_class.return_value = mock_builder
+        with (
+            patch(
+                "langgraph_forge.builders.multiagent.router.StateGraph",
+                mock_state_graph_class,
+            ),
+            patch(
+                "langgraph_forge.builders.multiagent.router.specialist_to_node",
+                return_value=MagicMock(),
+            ),
+        ):
+            create_router_agent(spec, classifier=lambda state: "billing")
+
+        mock_state_graph_class.assert_called_once_with(CustomRouterState)
