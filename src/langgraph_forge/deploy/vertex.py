@@ -31,6 +31,7 @@ class VertexAgentEngineAdapter:
 
     name: ClassVar[str] = "vertex"
     requires_extras: ClassVar[tuple[str, ...]] = ("google-cloud-aiplatform",)
+    is_stub: ClassVar[bool] = True
 
     def prepare(self, graph: Any, config: AdapterConfig) -> Any:  # noqa: ARG002
         raise NotImplementedError(_V02_MESSAGE)

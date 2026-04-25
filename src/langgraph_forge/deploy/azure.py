@@ -31,6 +31,7 @@ class AzureAIAgentAdapter:
 
     name: ClassVar[str] = "azure"
     requires_extras: ClassVar[tuple[str, ...]] = ("azure-ai-agents",)
+    is_stub: ClassVar[bool] = True
 
     def prepare(self, graph: Any, config: AdapterConfig) -> Any:  # noqa: ARG002
         raise NotImplementedError(_V02_MESSAGE)
