@@ -200,6 +200,40 @@ and re-export the upstream function. We are not married to thin
 wrappers; we are married to one canonical import and one config
 audit trail.
 
+### The trade-off heuristic for any wrapper PR
+
+When proposing a new wrapper (or auditing an existing one), the
+trade is always: **LangGraph's "maximum flexibility" intent vs our
+"lower barrier to entry" intent**. The wrapper is healthy only if
+it reduces a real barrier *and* leaves the user a way back to full
+upstream power when our shape doesn't fit.
+
+Walk these four questions in order. Any "no" or "just hides one
+line" is a signal to delete or not ship:
+
+1. **What upstream intent are we narrowing?** Be specific —
+   "init_chat_model accepts arbitrary provider kwargs" or
+   "create_react_agent compiles its own graph internally".
+2. **What capability do users lose?** State the concrete sacrifice.
+   If the answer is "nothing meaningful", the wrapper is pure
+   sugar; demand a footgun-prevention or semantic-carry argument.
+3. **Is there a clean escape hatch?** `ModelSpec.extra` dict,
+   `SpecialistSpec.subgraph`, `create_custom_agent`, or simply
+   "users can still `from langgraph... import ...` directly". If
+   no escape exists, we are trapping users — fix the wrapper or
+   drop it.
+4. **Does our wrapper prevent a real footgun, or just hide one
+   line?** Footgun prevention (e.g. `ThreadConfig` rules out
+   `thread-id` typos; `MCPServerConfig` cross-field validator
+   rejects stdio+url) earns its keep. Hiding one upstream import
+   does not.
+
+**The rule, restated**: keep wrappers that prevent footguns or
+carry semantics; delete public APIs that only wrap one line; put
+limitations in docstrings + this boundary doc rather than in code.
+The 0.3.0a1 removal of `resume` (`docs/how-to/resume-after-interrupt.md`)
+is the canonical example.
+
 ## Multi-MCP-server scenarios — where to outgrow this
 
 `load_mcp_tools(MCPConfig)` and `MCPServerConfig` cover the
