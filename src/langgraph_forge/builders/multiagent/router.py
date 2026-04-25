@@ -11,7 +11,6 @@ from langgraph.graph import END, START, StateGraph
 from langgraph_forge.builders.llm import get_model
 from langgraph_forge.builders.multiagent._common import specialist_to_node
 from langgraph_forge.core.specs import ModelSpec, RouterSpec
-from langgraph_forge.core.state import RouterState
 
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
@@ -53,7 +52,10 @@ def create_router_agent(
 
     classifier_node = _build_classifier_node(spec, classifier, classifier_prompt)
 
-    builder = StateGraph(RouterState)
+    # spec.state_schema is filled by RouterSpec's validator (RouterState by
+    # default, or any user-supplied subclass). Pass it through unchanged so
+    # extra domain channels survive compile -- mirrors swarm.py:50.
+    builder = StateGraph(spec.state_schema)
     # Pyright cannot infer that our dict-shaped node callables and the
     # CompiledStateGraph returned by specialist_to_node both satisfy
     # add_node's generic StateNode bound; same situation as supervisor.py.
