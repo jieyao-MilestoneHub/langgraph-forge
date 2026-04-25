@@ -1,10 +1,15 @@
 """Compile a single ReAct agent for {{ project_name }}."""
 
 from __future__ import annotations
-
+{% if checkpointer in ("sqlite", "postgres") %}
+import os
+{% endif %}
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_forge import create_single_agent
+{%- if checkpointer != "none" %}
+from langgraph_forge import get_checkpointer
+{%- endif %}
 
 from {{ package_name }}.providers import get_supervisor_model
 
@@ -16,8 +21,29 @@ SYSTEM_PROMPT = (
 
 def build_graph() -> CompiledStateGraph:
     """Return the compiled single-agent graph."""
+{%- if checkpointer == "memory" %}
+    checkpointer = get_checkpointer("memory")
+    return create_single_agent(
+        model=get_supervisor_model(),
+        tools=[],
+        prompt=SYSTEM_PROMPT,
+        checkpointer=checkpointer,
+    )
+{%- elif checkpointer in ("sqlite", "postgres") %}
+    checkpointer = get_checkpointer(
+        "{{ checkpointer }}",
+        conn_string=os.environ["LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING"],
+    )
+    return create_single_agent(
+        model=get_supervisor_model(),
+        tools=[],
+        prompt=SYSTEM_PROMPT,
+        checkpointer=checkpointer,
+    )
+{%- else %}
     return create_single_agent(
         model=get_supervisor_model(),
         tools=[],
         prompt=SYSTEM_PROMPT,
     )
+{%- endif %}

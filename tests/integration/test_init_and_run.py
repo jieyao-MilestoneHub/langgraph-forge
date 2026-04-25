@@ -201,7 +201,8 @@ class TestCheckpointerWiring:
         env_example = (target / ".env.example").read_text(encoding="utf-8")
         pyproject = (target / "pyproject.toml").read_text(encoding="utf-8")
 
-        assert 'get_checkpointer("sqlite"' in graph_py
+        assert "get_checkpointer(" in graph_py
+        assert '"sqlite"' in graph_py
         assert "LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING" in env_example
         assert "langgraph-forge[sqlite]" in pyproject
 
@@ -229,7 +230,8 @@ class TestCheckpointerWiring:
         env_example = (target / ".env.example").read_text(encoding="utf-8")
         pyproject = (target / "pyproject.toml").read_text(encoding="utf-8")
 
-        assert 'get_checkpointer("postgres"' in graph_py
+        assert "get_checkpointer(" in graph_py
+        assert '"postgres"' in graph_py
         assert "LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING" in env_example
         assert "langgraph-forge[postgres]" in pyproject
 

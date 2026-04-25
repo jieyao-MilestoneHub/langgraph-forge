@@ -42,6 +42,22 @@ class Pattern(StrEnum):
     custom = "custom"
 
 
+class Checkpointer(StrEnum):
+    """Persistence backends the scaffolder can wire.
+
+    The package ships only the dispatcher (``get_checkpointer``) and
+    plumbing; the actual savers come from LangGraph upstream. Per the
+    initialisation boundary, backend choice is the user's; this enum
+    just lets ``init`` pre-wire the chosen backend so a scaffolded
+    project is one ``uv sync`` away from real persistence.
+    """
+
+    none = "none"
+    memory = "memory"
+    sqlite = "sqlite"
+    postgres = "postgres"
+
+
 # ---------------------------------------------------------------------------
 # Listing commands (stateless, safe for CI)
 # ---------------------------------------------------------------------------
@@ -121,6 +137,11 @@ def init(
     provider: Provider = typer.Option(..., "--provider"),  # noqa: B008
     pattern: Pattern = typer.Option(..., "--pattern"),  # noqa: B008
     deploy: str = typer.Option(..., "--deploy"),
+    checkpointer: Checkpointer = typer.Option(  # noqa: B008
+        Checkpointer.none,
+        "--checkpointer",
+        help="Persistence backend to pre-wire (none | memory | sqlite | postgres).",
+    ),
     mcp: Path | None = typer.Option(None, "--mcp", help="Path to MCP config JSON"),  # noqa: B008
     no_input: bool = typer.Option(False, "--no-input"),
     force: bool = typer.Option(False, "--force"),
@@ -156,6 +177,7 @@ def init(
         "provider": provider.value,
         "pattern": pattern.value,
         "deploy": deploy,
+        "checkpointer": checkpointer.value,
         "mcp_path": str(mcp) if mcp else "",
     }
 

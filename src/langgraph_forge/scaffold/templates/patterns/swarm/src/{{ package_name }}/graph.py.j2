@@ -1,10 +1,15 @@
 """Compile a swarm graph for {{ project_name }}."""
 
 from __future__ import annotations
-
+{% if checkpointer in ("sqlite", "postgres") %}
+import os
+{% endif %}
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_forge import MultiAgentSpec, create_swarm_agent
+{%- if checkpointer != "none" %}
+from langgraph_forge import get_checkpointer
+{%- endif %}
 
 from {{ package_name }}.specialists import SPECIALISTS
 
@@ -17,5 +22,16 @@ def build_graph() -> CompiledStateGraph:
     starts; once the run is rolling, the ``active_agent`` channel in
     SwarmState routes each step.
     """
+{%- if checkpointer == "memory" %}
+    checkpointer = get_checkpointer("memory")
+    spec = MultiAgentSpec(specialists=SPECIALISTS, checkpointer=checkpointer)
+{%- elif checkpointer in ("sqlite", "postgres") %}
+    checkpointer = get_checkpointer(
+        "{{ checkpointer }}",
+        conn_string=os.environ["LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING"],
+    )
+    spec = MultiAgentSpec(specialists=SPECIALISTS, checkpointer=checkpointer)
+{%- else %}
     spec = MultiAgentSpec(specialists=SPECIALISTS)
+{%- endif %}
     return create_swarm_agent(spec, default_active_agent="researcher")

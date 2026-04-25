@@ -1,10 +1,15 @@
 """Compile a router graph for {{ project_name }}."""
 
 from __future__ import annotations
-
+{% if checkpointer in ("sqlite", "postgres") %}
+import os
+{% endif %}
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_forge import RouterSpec, create_router_agent
+{%- if checkpointer != "none" %}
+from langgraph_forge import get_checkpointer
+{%- endif %}
 
 from {{ package_name }}.providers import supervisor_model_spec
 from {{ package_name }}.specialists import ROUTES
@@ -28,7 +33,18 @@ def build_graph() -> CompiledStateGraph:
 
         return create_router_agent(spec, classifier=classify)
     """
+{%- if checkpointer == "memory" %}
+    checkpointer = get_checkpointer("memory")
+    spec = RouterSpec(routes=ROUTES, checkpointer=checkpointer)
+{%- elif checkpointer in ("sqlite", "postgres") %}
+    checkpointer = get_checkpointer(
+        "{{ checkpointer }}",
+        conn_string=os.environ["LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING"],
+    )
+    spec = RouterSpec(routes=ROUTES, checkpointer=checkpointer)
+{%- else %}
     spec = RouterSpec(routes=ROUTES)
+{%- endif %}
     return create_router_agent(
         spec,
         classifier=supervisor_model_spec(),

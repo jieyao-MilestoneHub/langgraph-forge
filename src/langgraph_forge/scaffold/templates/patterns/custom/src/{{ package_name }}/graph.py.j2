@@ -12,11 +12,16 @@ deterministic verifier nodes, or anything else your domain needs.
 """
 
 from __future__ import annotations
-
+{% if checkpointer in ("sqlite", "postgres") %}
+import os
+{% endif %}
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_forge import create_custom_agent
+{%- if checkpointer != "none" %}
+from langgraph_forge import get_checkpointer
+{%- endif %}
 
 from {{ package_name }}.specialists import make_executor, make_planner
 
@@ -33,4 +38,15 @@ def build_graph() -> CompiledStateGraph:
         graph.add_edge("planner", "executor")
         graph.add_edge("executor", END)
 
+{%- if checkpointer == "memory" %}
+    checkpointer = get_checkpointer("memory")
+    return create_custom_agent(build=build, checkpointer=checkpointer)
+{%- elif checkpointer in ("sqlite", "postgres") %}
+    checkpointer = get_checkpointer(
+        "{{ checkpointer }}",
+        conn_string=os.environ["LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING"],
+    )
+    return create_custom_agent(build=build, checkpointer=checkpointer)
+{%- else %}
     return create_custom_agent(build=build)
+{%- endif %}

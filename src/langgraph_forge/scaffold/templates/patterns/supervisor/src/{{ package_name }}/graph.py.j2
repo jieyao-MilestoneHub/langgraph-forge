@@ -1,10 +1,15 @@
 """Compile a supervisor graph for {{ project_name }}."""
 
 from __future__ import annotations
-
+{% if checkpointer in ("sqlite", "postgres") %}
+import os
+{% endif %}
 from langgraph.graph.state import CompiledStateGraph
 
 from langgraph_forge import MultiAgentSpec, create_supervisor_agent
+{%- if checkpointer != "none" %}
+from langgraph_forge import get_checkpointer
+{%- endif %}
 
 from {{ package_name }}.providers import get_supervisor_model
 from {{ package_name }}.specialists import SPECIALISTS
@@ -18,7 +23,18 @@ SUPERVISOR_PROMPT = (
 
 def build_graph() -> CompiledStateGraph:
     """Return the compiled supervisor graph, ready for adapter.invoke."""
+{%- if checkpointer == "memory" %}
+    checkpointer = get_checkpointer("memory")
+    spec = MultiAgentSpec(specialists=SPECIALISTS, checkpointer=checkpointer)
+{%- elif checkpointer in ("sqlite", "postgres") %}
+    checkpointer = get_checkpointer(
+        "{{ checkpointer }}",
+        conn_string=os.environ["LANGGRAPH_FORGE_CHECKPOINTER_CONN_STRING"],
+    )
+    spec = MultiAgentSpec(specialists=SPECIALISTS, checkpointer=checkpointer)
+{%- else %}
     spec = MultiAgentSpec(specialists=SPECIALISTS)
+{%- endif %}
     return create_supervisor_agent(
         spec,
         supervisor_model=get_supervisor_model(),
