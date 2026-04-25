@@ -13,7 +13,12 @@ it work this way?". The reader has time and is curious.
 
 ## Pages in this section
 
-(None yet. Likely first additions:)
+- [`initialization-boundary.md`](./initialization-boundary.md) — what
+  the package does, what's the user's job, and what's permanently
+  out of scope. The structural charter; read before adding a new
+  public symbol.
+
+(Future additions:)
 
 - *Architecture overview* — what each subpackage does and why.
 - *Why supervisor first, swarm later* — the multi-agent pattern

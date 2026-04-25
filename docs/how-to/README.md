@@ -21,6 +21,14 @@ conceptual background ([`../explanation/`](../explanation/README.md)).
 - *Wire an MCP server into a supervisor agent*
 - *Extend `ForgeState` with a custom channel*
 
+For **multi-MCP-server scenarios beyond what `load_mcp_tools`
+covers** (registry-style discovery, lifecycle management, cross-server
+dependency wiring, hot reload), see
+[`mcp-forge-core`](https://pypi.org/project/mcp-forge-core/) on PyPI.
+The boundary between this package and `mcp-forge-core` is documented
+at [`../explanation/initialization-boundary.md`](../explanation/initialization-boundary.md)
+§ "Multi-MCP-server scenarios — where to outgrow this".
+
 ## Authoring guidelines
 
 - **Title is a goal**: start with "How to…" or a verb phrase
