@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,6 +16,19 @@ from langgraph_forge.core.specs import (
     RouteSpec,
     SpecialistSpec,
 )
+
+
+@pytest.fixture(autouse=True)
+def _mock_get_model() -> Iterator[MagicMock]:
+    # specialist_to_node calls _common.get_model whenever a route target
+    # is a ReAct specialist. Without a real provider, init_chat_model
+    # would fail. Auto-mock at _common's import boundary so every router
+    # test can use ReAct-mode specialists cheaply.
+    with patch(
+        "langgraph_forge.builders.multiagent._common.get_model",
+        return_value=MagicMock(),
+    ) as mock:
+        yield mock
 
 
 def _model() -> ModelSpec:
@@ -97,11 +111,22 @@ class TestCallableClassifierBuildsGraph:
 
 class TestLLMClassifierBuildsGraph:
     def test_llm_classifier_produces_compiled_graph(self) -> None:
-        spec = RouterSpec(routes=[_route("billing")])
+        # Use a subgraph specialist so specialist_to_node does not call
+        # create_react_agent (which emits a 1.0 deprecation warning that
+        # the suite treats as error).
+        billing_subgraph = MagicMock(name="compiled_subgraph")
+        spec = RouterSpec(
+            routes=[
+                RouteSpec(
+                    name="billing",
+                    description="Billing handler.",
+                    target=SpecialistSpec(
+                        name="billing", subgraph=billing_subgraph
+                    ),
+                )
+            ],
+        )
 
-        # Patch get_model so the classifier node can be wired without a
-        # real provider; the classifier function is built at factory time
-        # but only invoked at runtime, so the patch is harmless here.
         with patch("langgraph_forge.builders.multiagent.router.get_model"):
             graph = create_router_agent(
                 spec,
@@ -119,14 +144,22 @@ class TestCompileForwarding:
             routes=[_route()],
             checkpointer=fake_checkpointer,
         )
-        # Patch StateGraph at the router module's import boundary so we
-        # can inspect compile() arguments.
+        # Patch both StateGraph and specialist_to_node: the former so we
+        # can inspect compile() args, the latter to avoid going through
+        # create_react_agent (which emits a deprecation warning under
+        # LangGraph 1.0 that the test suite treats as an error).
         mock_state_graph_class = MagicMock()
         mock_builder = MagicMock()
         mock_state_graph_class.return_value = mock_builder
-        with patch(
-            "langgraph_forge.builders.multiagent.router.StateGraph",
-            mock_state_graph_class,
+        with (
+            patch(
+                "langgraph_forge.builders.multiagent.router.StateGraph",
+                mock_state_graph_class,
+            ),
+            patch(
+                "langgraph_forge.builders.multiagent.router.specialist_to_node",
+                return_value=MagicMock(),
+            ),
         ):
             create_router_agent(spec, classifier=lambda state: "billing")
 
@@ -142,9 +175,15 @@ class TestCompileForwarding:
         mock_state_graph_class = MagicMock()
         mock_builder = MagicMock()
         mock_state_graph_class.return_value = mock_builder
-        with patch(
-            "langgraph_forge.builders.multiagent.router.StateGraph",
-            mock_state_graph_class,
+        with (
+            patch(
+                "langgraph_forge.builders.multiagent.router.StateGraph",
+                mock_state_graph_class,
+            ),
+            patch(
+                "langgraph_forge.builders.multiagent.router.specialist_to_node",
+                return_value=MagicMock(),
+            ),
         ):
             create_router_agent(spec, classifier=lambda state: "billing")
 
