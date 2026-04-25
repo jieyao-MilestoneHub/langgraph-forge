@@ -1,0 +1,95 @@
+"""Tests for langgraph_forge.builders.runtime: replay + resume."""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
+from langgraph_forge.builders.runtime import replay, resume
+from langgraph_forge.core.specs import ThreadConfig
+
+
+class TestReplay:
+    @pytest.mark.asyncio
+    async def test_calls_ainvoke_with_none_and_config(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={"messages": ["ok"]})
+        thread = ThreadConfig(thread_id="run-42", checkpoint_id="ckpt-7")
+
+        await replay(graph, thread)
+
+        graph.ainvoke.assert_awaited_once_with(None, thread.to_langgraph())
+
+    @pytest.mark.asyncio
+    async def test_returns_ainvoke_result(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={"messages": ["resumed"]})
+        thread = ThreadConfig(thread_id="run-42")
+
+        result = await replay(graph, thread)
+
+        assert result == {"messages": ["resumed"]}
+
+    @pytest.mark.asyncio
+    async def test_modify_updates_state_before_invoke(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={})
+        graph.aupdate_state = AsyncMock()
+        thread = ThreadConfig(thread_id="run-42", checkpoint_id="ckpt-7")
+        modify = {"counter": 5}
+
+        await replay(graph, thread, modify=modify)
+
+        graph.aupdate_state.assert_awaited_once_with(thread.to_langgraph(), modify)
+
+    @pytest.mark.asyncio
+    async def test_no_modify_skips_update_state(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={})
+        graph.aupdate_state = AsyncMock()
+        thread = ThreadConfig(thread_id="run-42")
+
+        await replay(graph, thread)
+
+        graph.aupdate_state.assert_not_awaited()
+
+
+class TestResume:
+    @pytest.mark.asyncio
+    async def test_calls_ainvoke_with_command_resume(self) -> None:
+        from langgraph.types import Command
+
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={"messages": []})
+        thread = ThreadConfig(thread_id="run-42")
+
+        await resume(graph, thread, value="approved")
+
+        # The first positional arg to ainvoke must be a Command(resume="approved").
+        call_args = graph.ainvoke.await_args
+        passed = call_args.args[0]
+        assert isinstance(passed, Command)
+        assert passed.resume == "approved"
+
+    @pytest.mark.asyncio
+    async def test_returns_ainvoke_result(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={"messages": ["resumed"]})
+        thread = ThreadConfig(thread_id="run-42")
+
+        result = await resume(graph, thread, value="ok")
+
+        assert result == {"messages": ["resumed"]}
+
+    @pytest.mark.asyncio
+    async def test_passes_thread_config_dict(self) -> None:
+        graph = MagicMock()
+        graph.ainvoke = AsyncMock(return_value={})
+        thread = ThreadConfig(thread_id="run-42", checkpoint_ns="tenant-a")
+
+        await resume(graph, thread, value="ok")
+
+        # Second positional arg is the configurable dict.
+        call_args = graph.ainvoke.await_args
+        assert call_args.args[1] == thread.to_langgraph()
