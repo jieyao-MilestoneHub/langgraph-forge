@@ -86,6 +86,7 @@ class TestMultipleCombinations:
             ("single", "grok", "direct"),
             ("swarm", "anthropic", "direct"),
             ("hierarchical", "anthropic", "direct"),
+            ("router", "anthropic", "direct"),
         ],
     )
     def test_combination_scaffolds_successfully(

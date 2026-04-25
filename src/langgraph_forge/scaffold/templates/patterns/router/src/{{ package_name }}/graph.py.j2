@@ -1,0 +1,36 @@
+"""Compile a router graph for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import RouterSpec, create_router_agent
+
+from {{ package_name }}.providers import supervisor_model_spec
+from {{ package_name }}.specialists import ROUTES
+
+CLASSIFIER_PROMPT = (
+    "You are a router. Given a user request, decide which route best "
+    "matches their need. Output only the route name."
+)
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled router graph, ready for adapter.invoke.
+
+    Default: an LLM classifier (cheaper model recommended). To switch
+    to a deterministic Callable classifier, replace the
+    ``classifier=supervisor_model_spec()`` argument with a function:
+
+        def classify(state):
+            last = state["messages"][-1].content.lower()
+            return "billing" if "refund" in last else "general"
+
+        return create_router_agent(spec, classifier=classify)
+    """
+    spec = RouterSpec(routes=ROUTES)
+    return create_router_agent(
+        spec,
+        classifier=supervisor_model_spec(),
+        classifier_prompt=CLASSIFIER_PROMPT,
+    )

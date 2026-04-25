@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage
 from langgraph.checkpoint.base import BaseCheckpointSaver
+from langgraph.graph import END, START, StateGraph
 
 from langgraph_forge.builders.multiagent.router import create_router_agent
 from langgraph_forge.core.specs import (
@@ -16,6 +17,7 @@ from langgraph_forge.core.specs import (
     RouteSpec,
     SpecialistSpec,
 )
+from langgraph_forge.core.state import RouterState
 
 
 @pytest.fixture(autouse=True)
@@ -67,7 +69,7 @@ class TestClassifierTypeValidation:
         with pytest.raises(ValueError, match="route"):
             create_router_agent(
                 RouterSpec(routes=[]),
-                classifier=lambda state: "x",  # noqa: ARG005
+                classifier=lambda state: "x",
             )
 
 
@@ -75,10 +77,6 @@ class TestCallableClassifierBuildsGraph:
     def test_factory_compiles_with_callable_classifier(self) -> None:
         # End-to-end: a callable classifier + subgraph specialists
         # produces a compiled graph without touching any LLM.
-        from langgraph.graph import END, START, StateGraph
-
-        from langgraph_forge.core.state import RouterState
-
         # Build a tiny deterministic specialist via subgraph mode so we
         # do not need any real LLM. Each "specialist" appends a marker.
         def _make_passthrough(label: str) -> object:
@@ -96,9 +94,7 @@ class TestCallableClassifierBuildsGraph:
                 RouteSpec(
                     name="billing",
                     description="d",
-                    target=SpecialistSpec(
-                        name="billing", subgraph=_make_passthrough("billing")
-                    ),
+                    target=SpecialistSpec(name="billing", subgraph=_make_passthrough("billing")),
                 ),
             ],
         )
@@ -120,9 +116,7 @@ class TestLLMClassifierBuildsGraph:
                 RouteSpec(
                     name="billing",
                     description="Billing handler.",
-                    target=SpecialistSpec(
-                        name="billing", subgraph=billing_subgraph
-                    ),
+                    target=SpecialistSpec(name="billing", subgraph=billing_subgraph),
                 )
             ],
         )

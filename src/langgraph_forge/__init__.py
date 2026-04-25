@@ -12,6 +12,7 @@ from langgraph_forge.builders.checkpoint import get_checkpointer
 from langgraph_forge.builders.llm import get_model
 from langgraph_forge.builders.mcp import load_mcp_tools
 from langgraph_forge.builders.multiagent.hierarchical import create_hierarchical_agent
+from langgraph_forge.builders.multiagent.router import create_router_agent
 from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
 from langgraph_forge.builders.multiagent.swarm import create_swarm_agent
 from langgraph_forge.builders.runtime import replay, resume
@@ -27,11 +28,13 @@ from langgraph_forge.core.specs import (
     MCPServerConfig,
     ModelSpec,
     MultiAgentSpec,
+    RouterSpec,
+    RouteSpec,
     SpecialistSpec,
     TeamSpec,
     ThreadConfig,
 )
-from langgraph_forge.core.state import ForgeState, SwarmState
+from langgraph_forge.core.state import ForgeState, RouterState, SwarmState
 from langgraph_forge.deploy import DeploymentAdapter, DirectAdapter
 from langgraph_forge.deploy.base import AdapterConfig
 
@@ -49,6 +52,9 @@ __all__ = [
     "MissingExtraError",
     "ModelSpec",
     "MultiAgentSpec",
+    "RouteSpec",
+    "RouterSpec",
+    "RouterState",
     "SpecialistSpec",
     "SwarmState",
     "TeamSpec",
@@ -56,6 +62,7 @@ __all__ = [
     "__version__",
     "append_unique_reducer",
     "create_hierarchical_agent",
+    "create_router_agent",
     "create_single_agent",
     "create_supervisor_agent",
     "create_swarm_agent",

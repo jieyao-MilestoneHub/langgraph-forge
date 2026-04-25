@@ -38,6 +38,7 @@ class Pattern(StrEnum):
     supervisor = "supervisor"
     swarm = "swarm"
     hierarchical = "hierarchical"
+    router = "router"
 
 
 # ---------------------------------------------------------------------------

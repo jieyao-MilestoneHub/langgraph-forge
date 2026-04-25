@@ -29,10 +29,13 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "MCPConfig",
         "MCPServerConfig",
         "MultiAgentSpec",  # Phase 1 — topology-agnostic multi-agent config
+        "RouterSpec",  # Phase 5 — router pattern dispatch table
+        "RouteSpec",  # Phase 5 — one route entry inside a RouterSpec
         "TeamSpec",  # Phase 4 — domain supervisor for hierarchical
         "ThreadConfig",  # Phase 1 — typed wrapper for LangGraph configurable dict
         # State schemas
         "ForgeState",
+        "RouterState",  # Phase 5 — router pattern needs route channel
         "SwarmState",  # Phase 3 — swarm pattern needs active_agent
         # Reducers — Phase 1 (non-trivial state-channel merge functions)
         "merge_dict_reducer",
@@ -40,6 +43,7 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         # Builder factories
         "get_model",
         "create_hierarchical_agent",  # Phase 4
+        "create_router_agent",  # Phase 5
         "create_single_agent",
         "create_supervisor_agent",
         "create_swarm_agent",  # Phase 3

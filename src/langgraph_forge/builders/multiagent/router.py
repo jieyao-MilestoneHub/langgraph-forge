@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from langchain_core.messages import HumanMessage
 from langgraph.graph import END, START, StateGraph
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 # Public type alias for the classifier slot. Per Line 1 of the boundary,
 # a reasoning slot accepts either a live LLM (ModelSpec) or encoded code
 # (a Callable). Both are first-class equals in the router pattern.
-ClassifierSlot = Union[ModelSpec, Callable[[Any], str]]
+ClassifierSlot = ModelSpec | Callable[[Any], str]
 
 
 def create_router_agent(
@@ -53,10 +54,13 @@ def create_router_agent(
     classifier_node = _build_classifier_node(spec, classifier, classifier_prompt)
 
     builder = StateGraph(RouterState)
-    builder.add_node("classifier", classifier_node)
+    # Pyright cannot infer that our dict-shaped node callables and the
+    # CompiledStateGraph returned by specialist_to_node both satisfy
+    # add_node's generic StateNode bound; same situation as supervisor.py.
+    builder.add_node("classifier", classifier_node)  # pyright: ignore[reportArgumentType]
     for route in spec.routes:
         target_node = specialist_to_node(route.target)
-        builder.add_node(route.name, target_node)
+        builder.add_node(route.name, target_node)  # pyright: ignore[reportArgumentType]
         builder.add_edge(route.name, END)
 
     builder.add_edge(START, "classifier")
@@ -130,9 +134,7 @@ def _llm_classifier_node(
     still resolves. If no match is found, the node sets route=None
     and the graph's dispatch falls back to spec.default_route or END.
     """
-    route_descriptions = "\n".join(
-        f"- {r.name}: {r.description}" for r in spec.routes
-    )
+    route_descriptions = "\n".join(f"- {r.name}: {r.description}" for r in spec.routes)
     full_prompt = (
         f"{prompt}\n\nAvailable routes:\n{route_descriptions}\n\n"
         "Return only the name of the route that best matches."

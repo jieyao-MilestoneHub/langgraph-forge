@@ -1,0 +1,34 @@
+"""Router specialists -- one per route.
+
+Each RouteSpec carries a name (the routing key), a description (what
+the classifier sees), and a target SpecialistSpec that handles the
+request when this route fires. Add or remove routes here without
+touching graph.py.
+"""
+
+from __future__ import annotations
+
+from langgraph_forge import RouteSpec, SpecialistSpec
+
+from {{ package_name }}.providers import specialist_model_spec
+
+ROUTES = [
+    RouteSpec(
+        name="billing",
+        description="Billing, invoices, refunds, payment disputes.",
+        target=SpecialistSpec(
+            name="billing_handler",
+            prompt="You handle billing-related queries with care and accuracy.",
+            model=specialist_model_spec(),
+        ),
+    ),
+    RouteSpec(
+        name="tech_support",
+        description="Bugs, error messages, login issues, feature questions.",
+        target=SpecialistSpec(
+            name="tech_handler",
+            prompt="You diagnose and resolve technical issues for users.",
+            model=specialist_model_spec(),
+        ),
+    ),
+]
