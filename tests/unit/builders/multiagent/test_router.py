@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,44 +20,19 @@ from langgraph_forge.core.specs import (
 from langgraph_forge.core.state import RouterState
 
 
-@pytest.fixture(autouse=True)
-def _mock_get_model() -> Iterator[MagicMock]:
-    # specialist_to_node calls _common.get_model whenever a route target
-    # is a ReAct specialist. Without a real provider, init_chat_model
-    # would fail. Auto-mock at _common's import boundary so every router
-    # test can use ReAct-mode specialists cheaply.
-    with patch(
-        "langgraph_forge.builders.multiagent._common.get_model",
-        return_value=MagicMock(),
-    ) as mock:
-        yield mock
-
-
-def _model() -> ModelSpec:
-    return ModelSpec(model="gpt-4o", provider="openai")
-
-
-def _specialist(name: str = "alpha") -> SpecialistSpec:
-    return SpecialistSpec(name=name, prompt="p", model=_model())
-
-
-def _route(name: str = "billing") -> RouteSpec:
-    return RouteSpec(
-        name=name,
-        description=f"Handles {name} requests.",
-        target=_specialist(f"{name}_handler"),
-    )
-
-
 class TestClassifierTypeValidation:
-    def test_llm_classifier_requires_prompt(self) -> None:
-        spec = RouterSpec(routes=[_route()])
+    def test_llm_classifier_requires_prompt(
+        self,
+        model_spec: ModelSpec,
+        make_route: Callable[..., RouteSpec],
+    ) -> None:
+        spec = RouterSpec(routes=[make_route()])
 
         with pytest.raises(ValueError, match="classifier_prompt"):
-            create_router_agent(spec, classifier=_model())
+            create_router_agent(spec, classifier=model_spec)
 
-    def test_invalid_classifier_type_rejected(self) -> None:
-        spec = RouterSpec(routes=[_route()])
+    def test_invalid_classifier_type_rejected(self, make_route: Callable[..., RouteSpec]) -> None:
+        spec = RouterSpec(routes=[make_route()])
 
         with pytest.raises(TypeError, match="classifier"):
             create_router_agent(
@@ -106,7 +81,7 @@ class TestCallableClassifierBuildsGraph:
 
 
 class TestLLMClassifierBuildsGraph:
-    def test_llm_classifier_produces_compiled_graph(self) -> None:
+    def test_llm_classifier_produces_compiled_graph(self, model_spec: ModelSpec) -> None:
         # Use a subgraph specialist so specialist_to_node does not call
         # create_react_agent (which emits a 1.0 deprecation warning that
         # the suite treats as error).
@@ -124,7 +99,7 @@ class TestLLMClassifierBuildsGraph:
         with patch("langgraph_forge.builders.multiagent.router.get_model"):
             graph = create_router_agent(
                 spec,
-                classifier=_model(),
+                classifier=model_spec,
                 classifier_prompt="Pick the route that matches the request.",
             )
 
@@ -132,10 +107,10 @@ class TestLLMClassifierBuildsGraph:
 
 
 class TestCompileForwarding:
-    def test_compiled_with_spec_checkpointer(self) -> None:
+    def test_compiled_with_spec_checkpointer(self, make_route: Callable[..., RouteSpec]) -> None:
         fake_checkpointer = MagicMock(spec=BaseCheckpointSaver)
         spec = RouterSpec(
-            routes=[_route()],
+            routes=[make_route()],
             checkpointer=fake_checkpointer,
         )
         # Patch both StateGraph and specialist_to_node: the former so we
@@ -160,9 +135,9 @@ class TestCompileForwarding:
         _, kwargs = mock_builder.compile.call_args
         assert kwargs["checkpointer"] is fake_checkpointer
 
-    def test_interrupts_pass_to_compile(self) -> None:
+    def test_interrupts_pass_to_compile(self, make_route: Callable[..., RouteSpec]) -> None:
         spec = RouterSpec(
-            routes=[_route("billing"), _route("tech")],
+            routes=[make_route("billing"), make_route("tech")],
             interrupt_before=("billing",),
             interrupt_after=("tech",),
         )
@@ -187,10 +162,12 @@ class TestCompileForwarding:
 
 
 class TestStateSchemaForwarding:
-    def test_default_state_schema_constructs_state_graph_with_router_state(self) -> None:
+    def test_default_state_schema_constructs_state_graph_with_router_state(
+        self, make_route: Callable[..., RouteSpec]
+    ) -> None:
         # When the user does not supply state_schema, the spec validator
         # fills RouterState; the factory must hand that to StateGraph.
-        spec = RouterSpec(routes=[_route()])
+        spec = RouterSpec(routes=[make_route()])
         mock_state_graph_class = MagicMock()
         mock_builder = MagicMock()
         mock_state_graph_class.return_value = mock_builder
@@ -208,13 +185,15 @@ class TestStateSchemaForwarding:
 
         mock_state_graph_class.assert_called_once_with(RouterState)
 
-    def test_user_state_schema_subclass_constructs_state_graph_with_subclass(self) -> None:
+    def test_user_state_schema_subclass_constructs_state_graph_with_subclass(
+        self, make_route: Callable[..., RouteSpec]
+    ) -> None:
         # Mirrors swarm.py:50 -- a user-supplied subclass must reach
         # StateGraph untouched so the extra channels survive compile.
         class CustomRouterState(RouterState):
             risk_level: str
 
-        spec = RouterSpec(routes=[_route()], state_schema=CustomRouterState)
+        spec = RouterSpec(routes=[make_route()], state_schema=CustomRouterState)
         mock_state_graph_class = MagicMock()
         mock_builder = MagicMock()
         mock_state_graph_class.return_value = mock_builder

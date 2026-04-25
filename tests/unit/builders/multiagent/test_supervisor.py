@@ -2,31 +2,25 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from unittest.mock import MagicMock, patch, sentinel
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
 from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
 from langgraph_forge.core.specs import (
-    ModelSpec,
     MultiAgentSpec,
     SpecialistSpec,
 )
 
 
-def _spec(name: str = "alpha") -> SpecialistSpec:
-    return SpecialistSpec(
-        name=name,
-        prompt=f"You are {name}.",
-        model=ModelSpec(model="gpt-4o", provider="openai"),
-    )
-
-
 class TestCreateSupervisorAgentComposition:
-    def test_each_specialist_routed_through_specialist_to_node(self) -> None:
+    def test_each_specialist_routed_through_specialist_to_node(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
         # The supervisor delegates worker construction to _common.
         # We verify both calls happen rather than re-testing specialist_to_node.
-        spec = MultiAgentSpec(specialists=[_spec("a"), _spec("b")])
+        spec = MultiAgentSpec(specialists=[make_specialist("a"), make_specialist("b")])
         with (
             patch("langgraph_forge.builders.multiagent.supervisor.specialist_to_node") as mock_node,
             patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor"),
@@ -39,8 +33,10 @@ class TestCreateSupervisorAgentComposition:
 
         assert mock_node.call_count == 2
 
-    def test_workers_passed_to_create_supervisor(self) -> None:
-        spec = MultiAgentSpec(specialists=[_spec("a"), _spec("b")])
+    def test_workers_passed_to_create_supervisor(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
+        spec = MultiAgentSpec(specialists=[make_specialist("a"), make_specialist("b")])
         workers = [sentinel.worker_a, sentinel.worker_b]
         with (
             patch(
@@ -58,8 +54,10 @@ class TestCreateSupervisorAgentComposition:
         _, kwargs = mock_sup.call_args
         assert kwargs["agents"] == workers
 
-    def test_supervisor_model_and_prompt_forwarded(self) -> None:
-        spec = MultiAgentSpec(specialists=[_spec()])
+    def test_supervisor_model_and_prompt_forwarded(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
+        spec = MultiAgentSpec(specialists=[make_specialist()])
         with (
             patch("langgraph_forge.builders.multiagent.supervisor.specialist_to_node"),
             patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor") as mock_sup,
@@ -78,13 +76,15 @@ class TestCreateSupervisorAgentComposition:
 
 
 class TestCompileWiring:
-    def test_compiled_with_spec_checkpointer(self) -> None:
+    def test_compiled_with_spec_checkpointer(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
         # MultiAgentSpec.checkpointer is typed BaseCheckpointSaver | None,
         # so sentinel objects fail Pydantic validation. spec= the mock to
         # the real type so isinstance / pydantic accept it.
         fake_checkpointer = MagicMock(spec=BaseCheckpointSaver)
         spec = MultiAgentSpec(
-            specialists=[_spec()],
+            specialists=[make_specialist()],
             checkpointer=fake_checkpointer,
         )
         sup_graph = MagicMock(name="supervisor_graph")
@@ -106,9 +106,11 @@ class TestCompileWiring:
         _, kwargs = sup_graph.compile.call_args
         assert kwargs["checkpointer"] is fake_checkpointer
 
-    def test_interrupt_before_passed_to_compile(self) -> None:
+    def test_interrupt_before_passed_to_compile(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
         spec = MultiAgentSpec(
-            specialists=[_spec()],
+            specialists=[make_specialist()],
             interrupt_before=("alpha",),
         )
         sup_graph = MagicMock()
@@ -131,9 +133,11 @@ class TestCompileWiring:
         # list[str] | None. Test asserts the post-conversion shape.
         assert kwargs["interrupt_before"] == ["alpha"]
 
-    def test_interrupt_after_passed_to_compile(self) -> None:
+    def test_interrupt_after_passed_to_compile(
+        self, make_specialist: Callable[..., SpecialistSpec]
+    ) -> None:
         spec = MultiAgentSpec(
-            specialists=[_spec()],
+            specialists=[make_specialist()],
             interrupt_after=("alpha",),
         )
         sup_graph = MagicMock()
@@ -153,8 +157,8 @@ class TestCompileWiring:
         _, kwargs = sup_graph.compile.call_args
         assert kwargs["interrupt_after"] == ["alpha"]
 
-    def test_returns_compiled_graph(self) -> None:
-        spec = MultiAgentSpec(specialists=[_spec()])
+    def test_returns_compiled_graph(self, make_specialist: Callable[..., SpecialistSpec]) -> None:
+        spec = MultiAgentSpec(specialists=[make_specialist()])
         sup_graph = MagicMock()
         sup_graph.compile.return_value = sentinel.compiled
         with (
