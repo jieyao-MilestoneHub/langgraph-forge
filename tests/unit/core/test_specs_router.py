@@ -108,3 +108,34 @@ class TestRouterSpec:
                 ],
                 nonexistent="oops",  # pyright: ignore[reportCallIssue]
             )
+
+
+class TestRouterSpecStateSchema:
+    def test_state_schema_defaults_to_router_state(self) -> None:
+        # Mirrors MultiAgentSpec's auto-default to ForgeState; lets the
+        # router factory honour subclasses while keeping the common case
+        # zero-config.
+        from langgraph_forge.core.state import RouterState
+
+        spec = RouterSpec(
+            routes=[
+                RouteSpec(name="billing", description="d", target=_specialist("a")),
+            ],
+        )
+
+        assert spec.state_schema is RouterState
+
+    def test_user_supplied_state_schema_subclass_preserved(self) -> None:
+        from langgraph_forge.core.state import RouterState
+
+        class CustomRouterState(RouterState):
+            risk_level: str
+
+        spec = RouterSpec(
+            routes=[
+                RouteSpec(name="billing", description="d", target=_specialist("a")),
+            ],
+            state_schema=CustomRouterState,
+        )
+
+        assert spec.state_schema is CustomRouterState
