@@ -4,6 +4,10 @@ Thanks for taking time to help. This is a small, opinionated project; the
 contribution process is correspondingly opinionated. Read this whole doc
 before opening your first PR — it pays back in shorter review cycles.
 
+> **Looking for deeper material?** [`docs/contributing/`](./docs/contributing/README.md)
+> has the repository tour, testing guide, and Architecture Decision
+> Records. This page is the entry point; that directory is the rest.
+
 ## TL;DR — the path from idea to merged PR
 
 1. Find an existing issue or open a new one with the right template.

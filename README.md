@@ -125,14 +125,36 @@ Listed so expectations stay calibrated. These are out of scope in v0.1, many per
 - Model-chain fallback (compose LangChain's `with_fallbacks` yourself)
 - Streaming helpers (`graph.astream()` is already the answer)
 
+## Documentation
+
+Deeper material lives under [`docs/`](./docs/README.md), organised by
+audience and (for user docs) by [Diátaxis](https://diataxis.fr/) quadrant:
+
+- **[Tutorials](./docs/tutorials/README.md)** — learn by doing
+- **[How-to guides](./docs/how-to/README.md)** — task recipes
+- **[Reference](./docs/reference/README.md)** — exhaustive lookup
+  (start with [CLI reference](./docs/reference/cli.md))
+- **[Explanation](./docs/explanation/README.md)** — concepts and design
+- **[Contributing](./docs/contributing/README.md)** — developer docs
+  (architecture, testing, ADRs)
+- **[Governance](./docs/governance/README.md)** — maintainer ops
+
+## Versioning
+
+Pre-1.0; see [`VERSIONING.md`](./VERSIONING.md) for the full policy
+(breaking-change rule, deprecation grace period, yank policy, and the
+gates to 1.0). Release notes live in [GitHub Releases](https://github.com/jieyao-MilestoneHub/langgraph-forge/releases).
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full flow
+(fork → branch → PR → review). Deeper material in
+[`docs/contributing/`](./docs/contributing/README.md).
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for private disclosure.
+See [`SECURITY.md`](./SECURITY.md) for private disclosure.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [`LICENSE`](./LICENSE).

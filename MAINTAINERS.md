@@ -5,6 +5,12 @@ is the repo owner (`@jieyao-MilestoneHub`); this doc captures everything
 that's not in `CONTRIBUTING.md` so a future co-maintainer can be onboarded
 by reading one file.
 
+> **Looking for deeper material?**
+> [`docs/governance/`](./docs/governance/README.md) holds the playbooks
+> (issue triage, release verification) that don't fit on this entry
+> page. The release semantics live in
+> [`VERSIONING.md`](./VERSIONING.md).
+
 ## Branch model
 
 **Trunk-based with one long-lived branch: `main`.**

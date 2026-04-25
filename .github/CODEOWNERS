@@ -5,3 +5,12 @@
 /pyproject.toml                   @jieyao-MilestoneHub
 /.github/workflows/               @jieyao-MilestoneHub
 /src/langgraph_forge/_version.py  @jieyao-MilestoneHub
+
+# The versioning policy itself is governance: any change to the
+# release semantics goes through a maintainer.
+/VERSIONING.md                    @jieyao-MilestoneHub
+
+# Architecture Decision Records: accepted ADRs are read-only.
+# Modifications require explicit maintainer approval; see
+# docs/contributing/decisions/README.md for the supersession flow.
+/docs/contributing/decisions/     @jieyao-MilestoneHub

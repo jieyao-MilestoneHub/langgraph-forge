@@ -80,7 +80,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/jieyao-MilestoneHub/langgraph-forge"
-Documentation = "https://github.com/jieyao-MilestoneHub/langgraph-forge#readme"
+Documentation = "https://github.com/jieyao-MilestoneHub/langgraph-forge/tree/main/docs"
 Repository = "https://github.com/jieyao-MilestoneHub/langgraph-forge"
 Issues = "https://github.com/jieyao-MilestoneHub/langgraph-forge/issues"
 Changelog = "https://github.com/jieyao-MilestoneHub/langgraph-forge/releases"
