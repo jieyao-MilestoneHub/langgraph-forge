@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import pytest
 from pydantic import ValidationError
 
 from langgraph_forge.core.specs import MCPConfig, MCPServerConfig
+
+NetworkTransport = Literal["sse", "streamable_http"]
 
 
 class TestStdioTransport:
@@ -29,20 +33,20 @@ class TestStdioTransport:
 
 class TestNetworkTransport:
     @pytest.mark.parametrize("transport", ["sse", "streamable_http"])
-    def test_valid_network_server(self, transport: str) -> None:
-        srv = MCPServerConfig(transport=transport, url="https://example.com/mcp")  # type: ignore[arg-type]
+    def test_valid_network_server(self, transport: NetworkTransport) -> None:
+        srv = MCPServerConfig(transport=transport, url="https://example.com/mcp")
 
         assert srv.url == "https://example.com/mcp"
 
     @pytest.mark.parametrize("transport", ["sse", "streamable_http"])
-    def test_network_missing_url_rejected(self, transport: str) -> None:
+    def test_network_missing_url_rejected(self, transport: NetworkTransport) -> None:
         with pytest.raises(ValidationError, match="url"):
-            MCPServerConfig(transport=transport)  # type: ignore[arg-type]
+            MCPServerConfig(transport=transport)  # type: ignore[call-arg]
 
     @pytest.mark.parametrize("transport", ["sse", "streamable_http"])
-    def test_network_with_command_rejected(self, transport: str) -> None:
+    def test_network_with_command_rejected(self, transport: NetworkTransport) -> None:
         with pytest.raises(ValidationError, match="command"):
-            MCPServerConfig(  # type: ignore[arg-type]
+            MCPServerConfig(
                 transport=transport,
                 url="https://example.com/mcp",
                 command="npx",
@@ -52,7 +56,7 @@ class TestNetworkTransport:
 class TestInvalidTransport:
     def test_unknown_transport_rejected(self) -> None:
         with pytest.raises(ValidationError, match="transport"):
-            MCPServerConfig(transport="telepathy", url="x")  # type: ignore[arg-type]
+            MCPServerConfig(transport="telepathy", url="x")  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
 
 class TestMCPConfigAggregate:
@@ -70,5 +74,5 @@ class TestMCPConfigAggregate:
     def test_frozen_rejects_mutation(self) -> None:
         cfg = MCPConfig(servers={})
 
-        with pytest.raises(ValidationError, match="frozen|immutable"):
+        with pytest.raises(ValidationError, match=r"frozen|immutable"):
             cfg.servers = {"x": MCPServerConfig(transport="stdio", command="c")}  # type: ignore[misc]

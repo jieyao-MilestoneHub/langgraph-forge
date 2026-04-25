@@ -36,9 +36,7 @@ def scaffolded(tmp_path: Path) -> Path:
 class TestScaffoldedTreeLayout:
     def test_expected_files_exist(self, scaffolded: Path) -> None:
         existing = sorted(
-            p.relative_to(scaffolded).as_posix()
-            for p in scaffolded.rglob("*")
-            if p.is_file()
+            p.relative_to(scaffolded).as_posix() for p in scaffolded.rglob("*") if p.is_file()
         )
 
         expected = sorted(
@@ -62,9 +60,7 @@ class TestScaffoldedTreeLayout:
 
 class TestJinjaSubstitution:
     def test_package_name_substituted_in_main(self, scaffolded: Path) -> None:
-        content = (scaffolded / "src" / "demo_agent" / "main.py").read_text(
-            encoding="utf-8"
-        )
+        content = (scaffolded / "src" / "demo_agent" / "main.py").read_text(encoding="utf-8")
 
         assert "demo_agent" in content
 
@@ -73,9 +69,7 @@ class TestJinjaSubstitution:
 
         assert "anthropic" in content
 
-    def test_project_name_substituted_in_pyproject(
-        self, scaffolded: Path
-    ) -> None:
+    def test_project_name_substituted_in_pyproject(self, scaffolded: Path) -> None:
         content = (scaffolded / "pyproject.toml").read_text(encoding="utf-8")
 
         assert 'name = "demo_agent"' in content
@@ -120,9 +114,7 @@ class TestMultipleCombinations:
 
 
 class TestOverwriteBehaviour:
-    def test_existing_target_without_force_fails(
-        self, scaffolded: Path
-    ) -> None:
+    def test_existing_target_without_force_fails(self, scaffolded: Path) -> None:
         result = runner.invoke(
             app,
             [
@@ -140,9 +132,7 @@ class TestOverwriteBehaviour:
 
         assert result.exit_code != 0
 
-    def test_existing_target_with_force_succeeds(
-        self, scaffolded: Path
-    ) -> None:
+    def test_existing_target_with_force_succeeds(self, scaffolded: Path) -> None:
         result = runner.invoke(
             app,
             [

@@ -22,9 +22,7 @@ def simple_source(tmp_path: Path) -> Path:
 
 
 class TestJinjaRendering:
-    def test_j2_file_rendered_with_context(
-        self, simple_source: Path, tmp_path: Path
-    ) -> None:
+    def test_j2_file_rendered_with_context(self, simple_source: Path, tmp_path: Path) -> None:
         target = tmp_path / "out"
         render_project(
             target_dir=target,
@@ -46,9 +44,7 @@ class TestJinjaRendering:
 
         assert not (target / "greeting.txt.j2").exists()
 
-    def test_nested_directories_preserved(
-        self, simple_source: Path, tmp_path: Path
-    ) -> None:
+    def test_nested_directories_preserved(self, simple_source: Path, tmp_path: Path) -> None:
         target = tmp_path / "out"
         render_project(
             target_dir=target,
@@ -56,15 +52,13 @@ class TestJinjaRendering:
             context={"name": "forge", "provider": "anthropic"},
         )
 
-        assert (
-            target / "sub" / "nested.py"
-        ).read_text(encoding="utf-8") == "PROVIDER = 'anthropic'\n"
+        assert (target / "sub" / "nested.py").read_text(
+            encoding="utf-8"
+        ) == "PROVIDER = 'anthropic'\n"
 
 
 class TestStaticCopy:
-    def test_non_j2_file_copied_verbatim(
-        self, simple_source: Path, tmp_path: Path
-    ) -> None:
+    def test_non_j2_file_copied_verbatim(self, simple_source: Path, tmp_path: Path) -> None:
         target = tmp_path / "out"
         render_project(
             target_dir=target,
@@ -108,9 +102,7 @@ class TestOverwriteGuard:
 
 
 class TestReturnValue:
-    def test_returns_list_of_written_paths(
-        self, simple_source: Path, tmp_path: Path
-    ) -> None:
+    def test_returns_list_of_written_paths(self, simple_source: Path, tmp_path: Path) -> None:
         target = tmp_path / "out"
 
         written = render_project(

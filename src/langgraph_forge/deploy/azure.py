@@ -33,11 +33,13 @@ class AzureAIAgentAdapter:
     requires_extras: ClassVar[tuple[str, ...]] = ("azure-ai-agents",)
     is_stub: ClassVar[bool] = True
 
-    def prepare(self, graph: Any, config: AdapterConfig) -> Any:  # noqa: ARG002
+    def prepare(self, graph: Any, config: AdapterConfig) -> Any:
         raise NotImplementedError(_V02_MESSAGE)
 
-    async def invoke(self, deployable: Any, inputs: dict) -> dict:  # noqa: ARG002
+    async def invoke(self, deployable: Any, inputs: dict) -> dict:
         raise NotImplementedError(_V02_MESSAGE)
 
     def template_fragment(self) -> Path:
-        return Path(__file__).parent.parent / "scaffold" / "templates" / "deploy_fragments" / "azure"
+        return (
+            Path(__file__).parent.parent / "scaffold" / "templates" / "deploy_fragments" / "azure"
+        )

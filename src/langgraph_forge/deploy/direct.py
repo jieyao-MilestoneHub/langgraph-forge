@@ -24,11 +24,13 @@ class DirectAdapter:
     name: ClassVar[str] = "direct"
     requires_extras: ClassVar[tuple[str, ...]] = ()
 
-    def prepare(self, graph: Any, config: AdapterConfig) -> Any:  # noqa: ARG002
+    def prepare(self, graph: Any, config: AdapterConfig) -> Any:
         return graph
 
     async def invoke(self, deployable: Any, inputs: dict) -> dict:
         return await deployable.ainvoke(inputs)
 
     def template_fragment(self) -> Path:
-        return Path(__file__).parent.parent / "scaffold" / "templates" / "deploy_fragments" / "direct"
+        return (
+            Path(__file__).parent.parent / "scaffold" / "templates" / "deploy_fragments" / "direct"
+        )

@@ -44,11 +44,11 @@ class TestModelSpecValidation:
             ModelSpec(model="gpt-4o")  # type: ignore[call-arg]
 
     def test_unknown_field_rejected(self) -> None:
-        with pytest.raises(ValidationError, match="extra_forbidden|Extra inputs"):
+        with pytest.raises(ValidationError, match=r"extra_forbidden|Extra inputs"):
             ModelSpec(  # type: ignore[call-arg]
                 model="gpt-4o",
                 provider="openai",
-                nonexistent_field="oops",
+                nonexistent_field="oops",  # pyright: ignore[reportCallIssue]
             )
 
 
@@ -56,5 +56,5 @@ class TestModelSpecImmutability:
     def test_frozen_rejects_field_mutation(self) -> None:
         spec = ModelSpec(model="gpt-4o", provider="openai")
 
-        with pytest.raises(ValidationError, match="frozen|immutable"):
+        with pytest.raises(ValidationError, match=r"frozen|immutable"):
             spec.model = "gpt-4-turbo"  # type: ignore[misc]

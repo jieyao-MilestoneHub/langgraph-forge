@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, ClassVar
 from unittest.mock import patch
 
 from typer.testing import CliRunner
@@ -40,7 +41,6 @@ def _fake_adapter_class(*, is_stub_value: bool | None = None) -> type:
     Pass is_stub_value=True / False to set the attribute explicitly;
     pass None (default) to leave it absent so getattr defaults take over.
     """
-    from typing import Any, ClassVar
 
     class _FakeAdapter:
         name: ClassVar[str] = "fake"

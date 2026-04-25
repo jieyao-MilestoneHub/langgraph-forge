@@ -7,11 +7,10 @@ Mutating a spec after construction is a bug.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from typing_extensions import Self
 
 
 class ModelSpec(BaseModel):
@@ -79,9 +78,7 @@ class MCPServerConfig(BaseModel):
             if self.url is None:
                 raise ValueError(f"transport={self.transport} requires `url`")
             if self.command is not None:
-                raise ValueError(
-                    f"transport={self.transport} does not accept `command`"
-                )
+                raise ValueError(f"transport={self.transport} does not accept `command`")
         return self
 
 

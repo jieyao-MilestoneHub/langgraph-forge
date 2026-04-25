@@ -58,12 +58,12 @@ class TestSpecialistSpecValidation:
             SpecialistSpec(name="researcher", prompt="p")  # type: ignore[call-arg]
 
     def test_unknown_field_rejected(self) -> None:
-        with pytest.raises(ValidationError, match="extra_forbidden|Extra inputs"):
+        with pytest.raises(ValidationError, match=r"extra_forbidden|Extra inputs"):
             SpecialistSpec(  # type: ignore[call-arg]
                 name="researcher",
                 prompt="p",
                 model=_model(),
-                nonexistent_field="oops",
+                nonexistent_field="oops",  # pyright: ignore[reportCallIssue]
             )
 
 
@@ -71,5 +71,5 @@ class TestSpecialistSpecImmutability:
     def test_frozen_rejects_field_mutation(self) -> None:
         spec = SpecialistSpec(name="researcher", prompt="p", model=_model())
 
-        with pytest.raises(ValidationError, match="frozen|immutable"):
+        with pytest.raises(ValidationError, match=r"frozen|immutable"):
             spec.name = "renamed"  # type: ignore[misc]

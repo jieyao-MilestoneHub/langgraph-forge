@@ -104,9 +104,11 @@ class TestGetAdapter:
         assert cls is _ValidFake
 
     def test_raises_keyerror_when_missing(self) -> None:
-        with patch(
-            "langgraph_forge.deploy.registry.entry_points",
-            return_value=(),
+        with (
+            patch(
+                "langgraph_forge.deploy.registry.entry_points",
+                return_value=(),
+            ),
+            pytest.raises(KeyError, match="unknown"),
         ):
-            with pytest.raises(KeyError, match="unknown"):
-                get_adapter("unknown")
+            get_adapter("unknown")

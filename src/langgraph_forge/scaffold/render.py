@@ -47,9 +47,7 @@ def render_project(
     return written
 
 
-def _render_source(
-    source: Path, target_dir: Path, context: dict[str, Any]
-) -> list[Path]:
+def _render_source(source: Path, target_dir: Path, context: dict[str, Any]) -> list[Path]:
     env = Environment(
         loader=FileSystemLoader(source),
         keep_trailing_newline=True,
@@ -81,13 +79,9 @@ def _render_path(rel_path: Path, env: Environment, context: dict[str, Any]) -> P
     ``from_string`` on a literal is an identity transform; we pay
     microseconds per segment but get consistent behaviour.
     """
-    rendered_parts = [
-        env.from_string(part).render(**context) for part in rel_path.parts
-    ]
+    rendered_parts = [env.from_string(part).render(**context) for part in rel_path.parts]
     return Path(*rendered_parts)
 
 
 def _walk_files(root: Path) -> list[Path]:
-    return sorted(
-        p.relative_to(root) for p in root.rglob("*") if p.is_file()
-    )
+    return sorted(p.relative_to(root) for p in root.rglob("*") if p.is_file())

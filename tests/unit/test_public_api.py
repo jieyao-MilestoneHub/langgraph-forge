@@ -61,8 +61,6 @@ class TestPublicAPISurface:
         # If a name is in __all__ but not actually defined on the
         # module, `from langgraph_forge import *` would fail. Catch
         # that at test time, not at first user import.
-        missing = [
-            name for name in EXPECTED_PUBLIC_API if not hasattr(langgraph_forge, name)
-        ]
+        missing = [name for name in EXPECTED_PUBLIC_API if not hasattr(langgraph_forge, name)]
 
         assert missing == []

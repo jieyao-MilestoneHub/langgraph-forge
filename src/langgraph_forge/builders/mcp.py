@@ -24,8 +24,11 @@ async def load_mcp_tools(config: MCPConfig) -> list[BaseTool]:
     The returned tools are ready to pass to either
     :func:`create_single_agent` or :class:`SpecialistSpec.tools`.
     """
-    servers_dict = {
-        name: srv.model_dump(exclude_none=True) for name, srv in config.servers.items()
-    }
-    client = MultiServerMCPClient(servers_dict)
+    servers_dict = {name: srv.model_dump(exclude_none=True) for name, srv in config.servers.items()}
+    # Upstream types `connections` as `dict[str, Connection]` (a TypedDict
+    # union). Our model_dump output satisfies it structurally at runtime
+    # but pyright sees only `dict[str, dict[str, Any]]` and refuses the
+    # narrowing. Ignore locally; runtime path is exercised by the unit
+    # tests that mock get_tools.
+    client = MultiServerMCPClient(servers_dict)  # pyright: ignore[reportArgumentType]
     return await client.get_tools()

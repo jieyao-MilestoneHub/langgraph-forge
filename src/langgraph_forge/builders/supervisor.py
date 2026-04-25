@@ -45,8 +45,12 @@ def create_supervisor_agent(
         for spec in specialists
     ]
 
+    # Upstream's `create_supervisor` annotates `agents` as `list[Pregel]`,
+    # but `create_react_agent` returns `CompiledStateGraph` which is a
+    # Pregel subclass. Pyright cannot see that without explicit Variance
+    # markers in upstream. Runtime path works; unit tests cover composition.
     supervisor_graph = create_supervisor(
-        agents=workers,
+        agents=workers,  # pyright: ignore[reportArgumentType]
         model=supervisor_model,
         prompt=supervisor_prompt,
     )

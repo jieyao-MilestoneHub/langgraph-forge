@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import importlib
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 import typer
@@ -20,7 +20,7 @@ app = typer.Typer(
 )
 
 
-class Provider(str, Enum):
+class Provider(StrEnum):
     """LLM providers the scaffolder knows how to wire."""
 
     anthropic = "anthropic"
@@ -31,7 +31,7 @@ class Provider(str, Enum):
     azure = "azure"
 
 
-class Pattern(str, Enum):
+class Pattern(StrEnum):
     """Agent execution patterns the scaffolder offers."""
 
     single = "single"
@@ -107,14 +107,18 @@ def doctor(
 _TEMPLATE_ROOT = Path(__file__).parent / "templates"
 
 
+# typer requires the Argument()/Option() *call* in defaults so it can build
+# the CLI metadata at decoration time; B008's "no function call in defaults"
+# does not apply here. Suppressed locally rather than globally so accidental
+# B008 elsewhere still trips review.
 @app.command()
 def init(
-    target: Path = typer.Argument(..., help="Target project directory to create."),
-    provider: Provider = typer.Option(..., "--provider"),
-    pattern: Pattern = typer.Option(..., "--pattern"),
+    target: Path = typer.Argument(..., help="Target project directory to create."),  # noqa: B008
+    provider: Provider = typer.Option(..., "--provider"),  # noqa: B008
+    pattern: Pattern = typer.Option(..., "--pattern"),  # noqa: B008
     deploy: str = typer.Option(..., "--deploy"),
-    mcp: Path | None = typer.Option(None, "--mcp", help="Path to MCP config JSON"),
-    no_input: bool = typer.Option(False, "--no-input"),  # noqa: ARG001
+    mcp: Path | None = typer.Option(None, "--mcp", help="Path to MCP config JSON"),  # noqa: B008
+    no_input: bool = typer.Option(False, "--no-input"),
     force: bool = typer.Option(False, "--force"),
 ) -> None:
     """Scaffold a new agent project."""
