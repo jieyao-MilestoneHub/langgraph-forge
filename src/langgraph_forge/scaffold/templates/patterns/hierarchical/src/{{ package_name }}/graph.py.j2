@@ -1,0 +1,24 @@
+"""Compile a hierarchical (supervisor-of-teams) graph for {{ project_name }}."""
+
+from __future__ import annotations
+
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import create_hierarchical_agent
+
+from {{ package_name }}.providers import get_supervisor_model
+from {{ package_name }}.specialists import TEAMS
+
+TOP_SUPERVISOR_PROMPT = (
+    "You orchestrate domain teams. Route each request to the team "
+    "best suited to handle it and synthesise their replies."
+)
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled hierarchical graph, ready for adapter.invoke."""
+    return create_hierarchical_agent(
+        top_supervisor_model=get_supervisor_model(),
+        top_supervisor_prompt=TOP_SUPERVISOR_PROMPT,
+        teams=TEAMS,
+    )

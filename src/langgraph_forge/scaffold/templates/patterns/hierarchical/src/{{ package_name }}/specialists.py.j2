@@ -1,0 +1,59 @@
+"""Hierarchical team declarations.
+
+Each TeamSpec is a domain supervisor with its own specialists. The
+top-level supervisor (declared in graph.py) routes to teams; each
+team's supervisor LLM then routes among its own specialists. The
+composition is recursive: hierarchical = supervisor-of-supervisors.
+"""
+
+from __future__ import annotations
+
+from langgraph_forge import SpecialistSpec, TeamSpec
+
+from {{ package_name }}.providers import specialist_model_spec
+
+# Edit these or add more teams. Within each team, add specialists like
+# you would in a flat supervisor topology -- the hierarchical factory
+# compiles each team into its own supervisor subgraph.
+TEAMS = [
+    TeamSpec(
+        name="research",
+        supervisor_model=specialist_model_spec(),
+        supervisor_prompt=(
+            "You manage the research team. Pick a researcher for each "
+            "incoming question and synthesise their findings."
+        ),
+        specialists=[
+            SpecialistSpec(
+                name="primary_researcher",
+                prompt="You gather primary-source material on the topic.",
+                model=specialist_model_spec(),
+            ),
+            SpecialistSpec(
+                name="secondary_researcher",
+                prompt="You synthesise existing literature and overviews.",
+                model=specialist_model_spec(),
+            ),
+        ],
+    ),
+    TeamSpec(
+        name="writing",
+        supervisor_model=specialist_model_spec(),
+        supervisor_prompt=(
+            "You manage the writing team. Choose a writer based on the "
+            "deliverable type and review their drafts."
+        ),
+        specialists=[
+            SpecialistSpec(
+                name="summariser",
+                prompt="You produce concise executive summaries.",
+                model=specialist_model_spec(),
+            ),
+            SpecialistSpec(
+                name="long_form_writer",
+                prompt="You write in-depth narratives from research notes.",
+                model=specialist_model_spec(),
+            ),
+        ],
+    ),
+]

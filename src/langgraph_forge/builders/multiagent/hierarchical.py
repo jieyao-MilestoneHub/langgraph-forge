@@ -60,9 +60,7 @@ def create_hierarchical_agent(
             supervisor_model=get_model(team.supervisor_model),
             supervisor_prompt=team.supervisor_prompt,
         )
-        team_subgraphs.append(
-            SpecialistSpec(name=team.name, subgraph=team_compiled)
-        )
+        team_subgraphs.append(SpecialistSpec(name=team.name, subgraph=team_compiled))
 
     # Top supervisor over the team subgraphs.
     return create_supervisor_agent(

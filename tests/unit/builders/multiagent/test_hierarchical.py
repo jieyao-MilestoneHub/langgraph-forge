@@ -41,9 +41,7 @@ def _team(name: str = "billing") -> TeamSpec:
         supervisor_model=_model(),
         supervisor_prompt=f"You manage the {name} team.",
         specialists=[
-            SpecialistSpec(
-                name=f"{name}_alpha", prompt="alpha", model=_model()
-            ),
+            SpecialistSpec(name=f"{name}_alpha", prompt="alpha", model=_model()),
         ],
     )
 
@@ -85,7 +83,7 @@ class TestHierarchicalRecursivelyComposes:
 
         # First call is the team's supervisor; spec.specialists must be the
         # team's specialists.
-        team_call_args, team_call_kwargs = mock_create.call_args_list[0]
+        team_call_args, _ = mock_create.call_args_list[0]
         spec = team_call_args[0]
         assert spec.specialists == teams[0].specialists
 
@@ -112,7 +110,7 @@ class TestHierarchicalRecursivelyComposes:
 
         # The inner create_supervisor_agent call gets the get_model output
         # plus the team's supervisor_prompt.
-        team_call_args, team_call_kwargs = mock_create.call_args_list[0]
+        _, team_call_kwargs = mock_create.call_args_list[0]
         assert team_call_kwargs["supervisor_model"] is sentinel.team_chat_model
         assert team_call_kwargs["supervisor_prompt"] == team.supervisor_prompt
 

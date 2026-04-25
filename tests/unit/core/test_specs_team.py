@@ -45,9 +45,7 @@ class TestTeamSpecConstruction:
 
 
 class TestTeamSpecNamePattern:
-    @pytest.mark.parametrize(
-        "name", ["a", "billing", "tech_support", "team_1"]
-    )
+    @pytest.mark.parametrize("name", ["a", "billing", "tech_support", "team_1"])
     def test_valid_names_accepted(self, name: str) -> None:
         team = TeamSpec(
             name=name,
@@ -58,9 +56,7 @@ class TestTeamSpecNamePattern:
 
         assert team.name == name
 
-    @pytest.mark.parametrize(
-        "name", ["", "1invalid", "Has-Dash", "has space"]
-    )
+    @pytest.mark.parametrize("name", ["", "1invalid", "Has-Dash", "has space"])
     def test_invalid_names_rejected(self, name: str) -> None:
         with pytest.raises(ValidationError, match="name"):
             TeamSpec(

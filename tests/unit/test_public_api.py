@@ -29,6 +29,7 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "MCPConfig",
         "MCPServerConfig",
         "MultiAgentSpec",  # Phase 1 — topology-agnostic multi-agent config
+        "TeamSpec",  # Phase 4 — domain supervisor for hierarchical
         "ThreadConfig",  # Phase 1 — typed wrapper for LangGraph configurable dict
         # State schemas
         "ForgeState",
@@ -38,6 +39,7 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "append_unique_reducer",
         # Builder factories
         "get_model",
+        "create_hierarchical_agent",  # Phase 4
         "create_single_agent",
         "create_supervisor_agent",
         "create_swarm_agent",  # Phase 3

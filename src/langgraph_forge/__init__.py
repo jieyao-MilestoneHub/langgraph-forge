@@ -11,6 +11,7 @@ from langgraph_forge._version import __version__
 from langgraph_forge.builders.checkpoint import get_checkpointer
 from langgraph_forge.builders.llm import get_model
 from langgraph_forge.builders.mcp import load_mcp_tools
+from langgraph_forge.builders.multiagent.hierarchical import create_hierarchical_agent
 from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
 from langgraph_forge.builders.multiagent.swarm import create_swarm_agent
 from langgraph_forge.builders.runtime import replay, resume
@@ -27,6 +28,7 @@ from langgraph_forge.core.specs import (
     ModelSpec,
     MultiAgentSpec,
     SpecialistSpec,
+    TeamSpec,
     ThreadConfig,
 )
 from langgraph_forge.core.state import ForgeState, SwarmState
@@ -49,9 +51,11 @@ __all__ = [
     "MultiAgentSpec",
     "SpecialistSpec",
     "SwarmState",
+    "TeamSpec",
     "ThreadConfig",
     "__version__",
     "append_unique_reducer",
+    "create_hierarchical_agent",
     "create_single_agent",
     "create_supervisor_agent",
     "create_swarm_agent",
