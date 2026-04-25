@@ -1,0 +1,25 @@
+--- a/src/finance_mvp/graph.py
++++ b/src/finance_mvp/graph.py
+@@ -8,10 +8,11 @@
+ from langgraph_forge import get_checkpointer
+ 
+ from finance_mvp.providers import get_supervisor_model
++from finance_mvp.tools import parse_invoice, validate_invoice
+ 
+ SYSTEM_PROMPT = (
+-    "You are a helpful assistant with access to tools. Use them when "
+-    "the user's question cannot be answered from your own knowledge."
++    "You are a finance assistant. Use parse_invoice on user-provided "
++    "invoice text, then validate_invoice on the result."
+ )
+ 
+ 
+@@ -20,7 +21,7 @@
+     checkpointer = get_checkpointer("memory")
+     return create_single_agent(
+         model=get_supervisor_model(),
+-        tools=[],
++        tools=[parse_invoice, validate_invoice],
+         prompt=SYSTEM_PROMPT,
+         checkpointer=checkpointer,
+     )
