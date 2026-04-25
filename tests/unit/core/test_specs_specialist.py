@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
+from langchain_core.tools import tool
 from pydantic import ValidationError
 
 from langgraph_forge.core.specs import ModelSpec, SpecialistSpec
@@ -20,6 +21,12 @@ def _fake_subgraph() -> MagicMock:
     # for the validator -- the spec only checks that *something* was given.
     sub = MagicMock(name="compiled_subgraph")
     return sub
+
+
+@tool
+def _stub_tool(query: str) -> str:
+    """Fixture tool: real BaseTool so Pydantic's type check passes."""
+    return query
 
 
 class TestSpecialistSpecHappyPath:
@@ -125,7 +132,7 @@ class TestSpecialistSpecSubgraphMode:
         with pytest.raises(ValidationError, match=r"subgraph.*tools|tools.*subgraph"):
             SpecialistSpec(
                 name="researcher",
-                tools=[MagicMock(name="tool")],
+                tools=[_stub_tool],
                 subgraph=_fake_subgraph(),
             )
 

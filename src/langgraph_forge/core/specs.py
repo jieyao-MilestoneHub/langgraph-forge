@@ -34,21 +34,62 @@ class ModelSpec(BaseModel):
 
 
 class SpecialistSpec(BaseModel):
-    """Declarative specification of one worker agent in a supervisor graph.
+    """Declarative specification of one reasoning slot in a multi-agent graph.
 
-    Passed to :func:`langgraph_forge.builders.supervisor.create_supervisor_agent`,
-    which turns each spec into a ReAct worker with the given model, tools,
-    and system prompt. The ``name`` is the routing key the supervisor LLM
-    uses (``delegate_to_<name>``) so it must be a valid Python-identifier-
-    shaped token.
+    Per the project boundary (Line 1, see
+    ``docs/explanation/initialization-boundary.md``), a specialist slot
+    accepts the user's domain reasoning in one of two encodings:
+
+    1. **Live LLM (ReAct mode)** -- supply ``prompt`` + ``model`` (and
+       optionally ``tools``). The factory builds a ReAct worker via
+       ``langgraph.prebuilt.create_react_agent``.
+    2. **Encoded code (subgraph mode)** -- supply ``subgraph``: any
+       compiled ``CompiledStateGraph``, including a single deterministic
+       node or another factory's output (used by hierarchical to slot
+       a sub-supervisor here). The graph runs as-is without further
+       wrapping.
+
+    Mixed mode is rejected -- supplying both a top-level prompt / model /
+    tools AND a subgraph is almost always a mistake (the subgraph
+    encapsulates its own prompts and tools).
+
+    ``name`` is the routing key the orchestrator uses
+    (``delegate_to_<name>`` in supervisor, ``transfer_to_<name>`` in
+    swarm) so it must be a valid Python-identifier-shaped token.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
 
     name: str = Field(..., pattern=r"^[a-z][a-z0-9_]{0,63}$")
-    prompt: str
-    model: ModelSpec
+    prompt: str | None = None
+    model: ModelSpec | None = None
     tools: list[BaseTool] = Field(default_factory=list)
+    subgraph: Any | None = None  # CompiledStateGraph; typed as Any to avoid
+    #                              # importing langgraph.graph.state at module
+    #                              # load and to keep tests cheap to author.
+
+    @model_validator(mode="after")
+    def _validate_encoding(self) -> Self:
+        if self.subgraph is not None:
+            # Subgraph mode: prompt / model / tools are not allowed --
+            # the subgraph encapsulates its own behaviour.
+            if self.prompt is not None:
+                raise ValueError("subgraph mode does not accept prompt")
+            if self.model is not None:
+                raise ValueError("subgraph mode does not accept model")
+            if self.tools:
+                raise ValueError("subgraph mode does not accept tools")
+            return self
+
+        # ReAct mode requires both prompt and model. Either alone is an
+        # incomplete encoding -- the error message names all three viable
+        # completions so the user sees their options.
+        if self.prompt is None or self.model is None:
+            raise ValueError(
+                "specialist must declare an encoding: provide prompt + model "
+                "(ReAct mode) OR subgraph (encoded mode)"
+            )
+        return self
 
 
 class MCPServerConfig(BaseModel):
