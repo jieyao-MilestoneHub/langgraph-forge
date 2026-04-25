@@ -1,7 +1,8 @@
 # ADR-0006: Ship five multi-agent architectures, sharing one foundation
 
-- **Status**: proposed
+- **Status**: accepted
 - **Date**: 2026-04-25
+- **Accepted**: 2026-04-24 — all five architectures shipped (Phases 1-6); foundation symbols, six pattern factories, and the composition recipe are in main.
 - **Deciders**: @jieyao-MilestoneHub
 
 ## Context
