@@ -251,9 +251,26 @@ class RouterSpec(BaseModel):
 
     routes: list[RouteSpec]
     default_route: str | None = None  # fallback when classifier returns unknown name
+    # state_schema mirrors MultiAgentSpec.state_schema: typed as Any because
+    # pyright cannot narrow to "this is a TypedDict class" without a Protocol
+    # upstream does not provide. Run-time always a TypedDict subclass; the
+    # validator below fills None with RouterState so users opt out of the
+    # default by passing their own subclass.
+    state_schema: Any = Field(default=None)
     checkpointer: BaseCheckpointSaver | None = None
     interrupt_before: tuple[str, ...] = ()
     interrupt_after: tuple[str, ...] = ()
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_state_schema(cls, data: Any) -> Any:
+        # RouterState is in core.state which would create a circular import
+        # if imported at module top-level; resolve here.
+        if isinstance(data, dict) and data.get("state_schema") is None:
+            from langgraph_forge.core.state import RouterState  # noqa: PLC0415
+
+            data["state_schema"] = RouterState
+        return data
 
 
 @dataclass(frozen=True, slots=True)

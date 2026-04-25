@@ -11,6 +11,7 @@ from langgraph_forge.core.specs import (
     RouteSpec,
     SpecialistSpec,
 )
+from langgraph_forge.core.state import RouterState
 
 
 def _model() -> ModelSpec:
@@ -115,8 +116,6 @@ class TestRouterSpecStateSchema:
         # Mirrors MultiAgentSpec's auto-default to ForgeState; lets the
         # router factory honour subclasses while keeping the common case
         # zero-config.
-        from langgraph_forge.core.state import RouterState
-
         spec = RouterSpec(
             routes=[
                 RouteSpec(name="billing", description="d", target=_specialist("a")),
@@ -126,8 +125,6 @@ class TestRouterSpecStateSchema:
         assert spec.state_schema is RouterState
 
     def test_user_supplied_state_schema_subclass_preserved(self) -> None:
-        from langgraph_forge.core.state import RouterState
-
         class CustomRouterState(RouterState):
             risk_level: str
 
