@@ -25,6 +25,17 @@
 - [ ] Error handling (each raise has a test asserting the specific exception)
 - [ ] Object-state (mutated state verified field-by-field + immutability)
 
+## Scope check (only if this PR touches `langgraph_forge.__init__.__all__`)
+
+<!-- If you are adding or changing a public symbol, answer these three
+     before requesting review. See docs/explanation/initialization-boundary.md
+     for the full criteria. -->
+
+- [ ] **Earns surface area**: standardises a config shape OR composes LangGraph primitives OR unifies the import surface OR provides an extension contract OR scaffolds a runnable starting point.
+- [ ] **Generic**: provider-agnostic, pattern-agnostic, deployment-agnostic.
+- [ ] **Not in the permanent anti-scope** (HTTP / auth / prompt registry / eval / observability / streaming / etc.).
+- [ ] `tests/unit/test_public_api.py::EXPECTED_PUBLIC_API` updated to match the new surface.
+
 ## Checklist
 
 - [ ] Commits follow Conventional Commits (`feat(scope): ...`, `test(scope): ...`, ...)
