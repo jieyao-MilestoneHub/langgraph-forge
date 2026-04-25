@@ -1,0 +1,36 @@
+"""Compile a custom (escape-hatch) graph for {{ project_name }}.
+
+The custom pattern is the layer that exists for topologies that do
+not fit supervisor / swarm / hierarchical / router. The ``build``
+callback receives an empty ``StateGraph`` and you author whatever
+nodes and edges you need. The factory then compiles with the
+package's standard cross-cutting kwargs (checkpointer, interrupts).
+
+Default shape: ``planner -> executor`` sequential pipeline. Edit the
+``build()`` function below to swap in fan-out, conditional branches,
+deterministic verifier nodes, or anything else your domain needs.
+"""
+
+from __future__ import annotations
+
+from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
+
+from langgraph_forge import create_custom_agent
+
+from {{ package_name }}.specialists import make_executor, make_planner
+
+
+def build_graph() -> CompiledStateGraph:
+    """Return the compiled custom graph, ready for adapter.invoke."""
+    planner = make_planner()
+    executor = make_executor()
+
+    def build(graph: StateGraph) -> None:
+        graph.add_node("planner", planner)
+        graph.add_node("executor", executor)
+        graph.add_edge(START, "planner")
+        graph.add_edge("planner", "executor")
+        graph.add_edge("executor", END)
+
+    return create_custom_agent(build=build)

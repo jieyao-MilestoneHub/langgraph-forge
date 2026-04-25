@@ -11,6 +11,7 @@ from langgraph_forge._version import __version__
 from langgraph_forge.builders.checkpoint import get_checkpointer
 from langgraph_forge.builders.llm import get_model
 from langgraph_forge.builders.mcp import load_mcp_tools
+from langgraph_forge.builders.multiagent.custom import create_custom_agent
 from langgraph_forge.builders.multiagent.hierarchical import create_hierarchical_agent
 from langgraph_forge.builders.multiagent.router import create_router_agent
 from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
@@ -61,6 +62,7 @@ __all__ = [
     "ThreadConfig",
     "__version__",
     "append_unique_reducer",
+    "create_custom_agent",
     "create_hierarchical_agent",
     "create_router_agent",
     "create_single_agent",

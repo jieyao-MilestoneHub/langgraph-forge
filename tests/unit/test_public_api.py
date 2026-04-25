@@ -42,6 +42,7 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "append_unique_reducer",
         # Builder factories
         "get_model",
+        "create_custom_agent",  # Phase 6 — escape hatch over StateGraph
         "create_hierarchical_agent",  # Phase 4
         "create_router_agent",  # Phase 5
         "create_single_agent",
