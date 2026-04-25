@@ -158,16 +158,27 @@ After publish:
 
 ## Changelog
 
-`CHANGELOG.md` is regenerated from commits on every release tag by
-`git-cliff` (see `cliff.toml`). Don't hand-edit the file; the publish
-workflow overwrites it. Hand-curated content goes in the GitHub Release
-description, which `git-cliff` also generates.
+**GitHub Releases is the changelog.** There is no `CHANGELOG.md` in the
+repository — keeping a hand-tracked file alongside an auto-generation
+pipeline invites drift, and `git-cliff` already produces release-quality
+notes from Conventional Commits.
 
-If you need to regenerate the changelog locally for review:
+The `release-notes` job in `.github/workflows/publish.yml` runs
+`git-cliff --latest --strip header` against the new tag and feeds the
+output into the GitHub Release body via `softprops/action-gh-release`.
+That body is the canonical changelog for that version.
+
+`pyproject.toml`'s `[project.urls].Changelog` points at
+`/releases` so users browsing PyPI / a clone land on the canonical view.
+
+If you need to preview a draft changelog locally before tagging:
 
 ```bash
-uv run --with git-cliff git-cliff -o CHANGELOG.md
+uv run --with git-cliff git-cliff --unreleased
 ```
+
+This prints what the next release's notes will look like based on
+commits since the last tag. It does not write a file.
 
 ## Yanking a bad release
 
