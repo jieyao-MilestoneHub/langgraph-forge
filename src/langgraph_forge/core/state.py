@@ -15,45 +15,25 @@ from langgraph.graph.message import add_messages
 
 
 class ForgeState(TypedDict):
-    """Minimal state schema carrying message history under LangGraph's reducer.
+    """Single-channel base; subclass to add domain channels::
 
-    Users with additional channels (scratchpad, plan, domain envelope)
-    subclass this TypedDict rather than editing it in-place, so the base
-    contract stays stable::
-
-        class MyState(ForgeState):
-            plan: list[str]
+    class MyState(ForgeState):
+        plan: list[str]
     """
 
     messages: Annotated[list, add_messages]
 
 
 class SwarmState(ForgeState):
-    """Swarm-pattern state schema.
-
-    Adds ``active_agent`` to track which specialist currently holds
-    the turn. Handoff tools (``transfer_to_<peer>``) update this
-    field; the swarm router uses its value to dispatch the next
-    invocation.
-
-    Subclasses inherit ``messages`` from :class:`ForgeState` and may
-    add domain channels alongside ``active_agent``.
-    """
+    """Adds ``active_agent``: written by ``transfer_to_<peer>`` handoff tools, read by the swarm router to dispatch the next invocation."""
 
     active_agent: str | None
 
 
 class RouterState(ForgeState):
-    """Router-pattern state schema.
+    """Adds ``route``: written by the classifier node, read by the dispatch conditional edge.
 
-    Adds ``route`` to record which specialist the classifier dispatched
-    to. The classifier writes this field; the conditional edge reads it
-    to pick the next node. Persisting ``route`` in state (rather than
-    an internal-only variable) makes replay debugging easy: a checkpoint
-    snapshot shows exactly which specialist ran.
-
-    Subclasses inherit ``messages`` from :class:`ForgeState` and may
-    add domain channels alongside ``route``.
+    Stored in state (rather than a local variable) so checkpoint snapshots show which specialist ran -- useful for replay debugging.
     """
 
     route: str | None
