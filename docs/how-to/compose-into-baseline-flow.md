@@ -92,16 +92,17 @@ slots a compiled graph into the route directly — no LLM construction
 inside the router itself.
 
 ```python
+from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from langgraph_forge import RouteSpec, SpecialistSpec
+from langgraph_forge import ForgeState, RouteSpec, SpecialistSpec
 
 
 def team_with_verifier(name: str, team: CompiledStateGraph) -> SpecialistSpec:
     """Compose a domain team with a deterministic verifier post-step."""
     builder = StateGraph(ForgeState)
     builder.add_node("team", team)
-    builder.add_node("verifier", make_verifier())
+    builder.add_node("verifier", make_verifier())  # from Step 1
     builder.add_edge(START, "team")
     builder.add_edge("team", "verifier")
     builder.add_edge("verifier", END)
