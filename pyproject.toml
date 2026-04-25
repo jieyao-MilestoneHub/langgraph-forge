@@ -7,7 +7,7 @@ name = "langgraph-forge"
 description = "Initialise LangGraph-based agent architectures: pick a provider, a pattern, a deployment — get a runnable project."
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 authors = [{ name = "langgraph-forge contributors" }]
 keywords = [
   "langgraph",
@@ -25,7 +25,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -132,7 +131,7 @@ include = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 src = ["src", "tests"]
 extend-exclude = [
   "src/langgraph_forge/scaffold/templates",  # Jinja2 templates: not valid Python
@@ -179,7 +178,7 @@ exclude = [
   "**/__pycache__",
   "src/langgraph_forge/scaffold/templates",
 ]
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 typeCheckingMode = "basic"
 reportMissingImports = "error"
 reportMissingTypeStubs = "warning"

@@ -33,7 +33,7 @@ uv run pytest -q
 
 Pre-commit runs the first three on every commit; CI runs all four
 on every push and PR across the matrix
-`{ubuntu, macos, windows} × {3.11, 3.12, 3.13}`.
+`{ubuntu, macos, windows} × {3.12, 3.13}`.
 
 ## Layout — mirrors `src/`
 

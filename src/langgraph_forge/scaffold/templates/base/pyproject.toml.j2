@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "{{ project_name }}"
 version = "0.1.0"
 description = "LangGraph agent scaffolded with langgraph-forge."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
 {%- if checkpointer in ("sqlite", "postgres") %}
   "langgraph-forge[{{ checkpointer }}]>=0.1.0a1",

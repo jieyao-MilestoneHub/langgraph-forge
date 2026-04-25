@@ -20,7 +20,7 @@ agent* — will land when feature surface stabilises.)
 
 ## Authoring guidelines
 
-- **One audience**: someone with Python 3.11+ installed and no prior
+- **One audience**: someone with Python 3.12+ installed and no prior
   exposure to `langgraph-forge`. Don't assume LangGraph familiarity.
 - **One result**: every tutorial promises a specific, runnable
   outcome at the end. State it in the first paragraph.
