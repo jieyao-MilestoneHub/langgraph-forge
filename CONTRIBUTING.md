@@ -1,105 +1,152 @@
 # Contributing to langgraph-forge
 
-Thanks for wanting to help. This doc captures the project's engineering conventions so your first PR lands cleanly.
+Thanks for taking time to help. This is a small, opinionated project; the
+contribution process is correspondingly opinionated. Read this whole doc
+before opening your first PR — it pays back in shorter review cycles.
 
-## Dev environment
+## TL;DR — the path from idea to merged PR
+
+1. Find an existing issue or open a new one with the right template.
+2. If you want to work on it, comment "I'd like to take this".
+3. Wait for the maintainer to assign you (usually within ~3 business days).
+4. **Fork** the repo and clone your fork.
+5. Branch from `main`, make changes with **TDD discipline**, push to your fork.
+6. Open a PR from your fork against the upstream `main` and fill in the template.
+7. Address review feedback. Maintainer squash-merges when CI is green and review is approved.
+
+There is no `develop` branch and no direct push for non-maintainers. `main`
+is trunk; releases are tags on `main`.
+
+## Filing issues
+
+Use the templates in `.github/ISSUE_TEMPLATE/`:
+
+- **bug.yml** — something broke that worked, or a clear spec violation.
+- **feature.yml** — new capability or improvement. Check `README.md`'s
+  "Not included — by design" list first; out-of-scope proposals will be closed.
+- **provider_request.yml** — new LLM provider option for the CLI.
+- **adapter_request.yml** — new deployment target. Note that out-of-tree
+  adapters (separate PyPI packages) need no upstream change; file here
+  only if you want the adapter shipped in this repo.
+
+Search existing issues before filing a duplicate. Issues without a clear
+reproduction or scope statement may be closed pending more detail.
+
+## Claiming an issue
+
+Maintainer assignment is the contract that you'll deliver. The protocol:
+
+1. Comment `I'd like to take this` (or similar) on the issue.
+2. Wait for the maintainer to add you under **Assignees**. Don't fork until
+   you're assigned — it avoids two contributors duplicating work.
+3. Open a **draft** PR within **7 days** of assignment. The draft can be
+   skeletal (one failing test, an empty function); it's the signal that
+   work has started.
+4. If the draft PR sees no commit activity for **14 days**, the maintainer
+   may unassign and re-open the issue for someone else. Comment if you
+   need an extension — that's almost always granted.
+
+Look for `good first issue` and `help wanted` labels if you're new to the
+codebase.
+
+## Setup
 
 ```bash
-# Install uv (one-time, if you don't have it)
-# Windows (PowerShell):   irm https://astral.sh/uv/install.ps1 | iex
-# macOS / Linux:          curl -LsSf https://astral.sh/uv/install.sh | sh
-
-git clone https://github.com/jieyao-MilestoneHub/langgraph-forge.git
+# Fork on GitHub, then:
+git clone https://github.com/<your-username>/langgraph-forge.git
 cd langgraph-forge
+git remote add upstream https://github.com/jieyao-MilestoneHub/langgraph-forge.git
+
+# Install uv (one-time; pick one)
+# Windows (PowerShell):  irm https://astral.sh/uv/install.ps1 | iex
+# macOS / Linux:         curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies and pre-commit hooks
 uv sync --dev
 uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
-`uv sync --dev` installs core runtime deps + the `dev` extras (ruff, pyright, pytest, pre-commit, build, twine, git-cliff). Cloud extras (`bedrock`, `vertex`, `azure`) are **not** installed by default — CI doesn't need them and most development doesn't either.
-
-## Branch strategy
-
-- **`develop`** is the active branch. All regular work commits land here via short-lived feature branches merged with squash (or via push for maintainers).
-- **`main`** is release-only. It receives merges from `develop` via PR when we cut a tagged release (`0.1.0a1`, `0.1.0rc1`, `0.1.0`, ...).
-- Never force-push to `main`. Never run a deploy workflow against `main` outside a release cut.
-
-Create your branch from `develop`:
+## Branching and committing
 
 ```bash
-git switch develop
-git pull
-git switch -c feat/my-thing
+# Sync with upstream
+git fetch upstream
+git switch main
+git merge --ff-only upstream/main
+
+# Branch from main (in your fork)
+git switch -c feat/123-add-together-provider
 ```
 
-## Commit convention
+Branch naming: `<type>/<issue-number>-<short-slug>`. Common types: `feat`,
+`fix`, `docs`, `refactor`, `test`, `ci`. Drop the issue number for tiny
+issue-less work.
 
-We use [Conventional Commits](https://www.conventionalcommits.org/) (enforced by a commit-msg hook) because `git-cliff` generates the changelog from commit prefixes. Valid prefixes:
+**TDD is the only way new behaviour lands.** See
+`.claude/rules/git-workflow.md` for the full rules; the short version:
 
-| Prefix | Use for |
-|---|---|
-| `feat` | New user-facing feature |
-| `fix` | Bug fix |
-| `docs` | Docs-only change |
-| `test` | Tests (added or refactored) |
-| `refactor` | Structural change, no behaviour diff |
-| `perf` | Performance improvement |
-| `build` | Build system / dependency change |
-| `ci` | GitHub Actions / pre-commit change |
-| `chore` | Repo metadata, release cuts, misc |
-| `style` | Formatting only |
-| `revert` | Revert a prior commit |
+1. `test(scope): <behaviour>` — failing test (red).
+2. `feat(scope): <behaviour>` — minimum impl (green).
+3. `refactor(scope): ...` — optional, no behaviour diff.
 
-Scope is the subpackage when relevant: `feat(builders): ...`, `test(deploy): ...`, `refactor(scaffold): ...`. Breaking changes get a `!`: `feat(deploy)!: rename prepare to build`.
+Commits use **Conventional Commits** (`feat`, `fix`, `docs`, `test`,
+`refactor`, `perf`, `build`, `ci`, `chore`, `style`, `revert`). The
+`commit-msg` pre-commit hook rejects non-conforming messages.
 
-### TDD discipline
+## Submitting the PR
 
-Every new behaviour lands as a pair:
+1. Push your branch to your fork: `git push origin feat/123-add-together-provider`.
+2. On GitHub, click **Compare & pull request**. Target is upstream
+   `main`. Source is your fork's branch.
+3. Fill in `.github/PULL_REQUEST_TEMPLATE.md`. Include `Closes #123` so the
+   issue auto-closes on merge.
+4. Mark the PR as **Draft** while still iterating; **Ready for review**
+   once you want maintainer eyes on it.
+5. CI will run on your fork against the matrix
+   (`{ubuntu, macos, windows} × {3.11, 3.12, 3.13}`). All checks must be
+   green before review.
 
-1. `test(<scope>): <behaviour>` — failing test.
-2. `feat(<scope>): <behaviour>` — minimum impl to pass.
+### Review expectations
 
-Combine into one `feat(...)` commit only when test + impl together are under ~30 LOC and separating adds no review value. Refactor commits land after green, with `refactor(<scope>): <what + why>`, no new tests, no behaviour diff.
+- Maintainer responds within **7 business days** of "Ready for review".
+- Reviews focus on:
+  - TDD discipline (commit shape, test/feat pairing).
+  - Four check categories from
+    [`.claude/rules/unit-testing.md`](./.claude/rules/unit-testing.md):
+    logic, boundary, error handling, object-state.
+  - Public API surface (anything exported from `langgraph_forge.__init__`).
+  - Scope: did the PR stay within what its issue asked for?
+- Address review by **adding new commits**, not by rewriting history. The
+  maintainer squashes at merge time, so your commits don't need to be
+  pristine — they need to be reviewable.
 
-## Code quality gates
+### Merge
 
-Each commit must keep these green:
+The maintainer **squash-merges** all PRs. The squashed commit message
+follows the PR title (Conventional Commits). Your individual commits live
+in the PR's history but don't pollute `main`.
 
-- `uv run ruff format --check .`
-- `uv run ruff check .`
-- `uv run pyright`
-- `uv run pytest -q`
+## Licensing
 
-Pre-commit runs ruff + pyright + detect-private-key locally on every commit. CI runs the full matrix `{3.11, 3.12, 3.13} × {ubuntu, macos, windows}`.
+By submitting a PR you agree your contribution is licensed under the MIT
+license (the project license). No CLA, no DCO sign-off.
 
-## PR checklist
+## What's out of scope
 
-Before requesting review, verify:
-
-- [ ] Every changed branch has a test that exercises it (logic check)
-- [ ] Each input parameter has typical / edge / invalid cases (boundary check)
-- [ ] Every `raise` path has a test asserting the specific exception (error check)
-- [ ] Mutations of persistent state (graph state, envelope, cache) assert both the fields that changed and the fields that did not (object-state check)
-- [ ] One assertion per test (multi-field checks use structure comparison)
-- [ ] Tests have no network, no real LLM calls, no wall-clock timestamps, no unseeded randomness
-- [ ] Commit messages follow Conventional Commits
-- [ ] `README.md` or inline docstrings updated if the public API changed
-- [ ] Any `NotImplementedError` added or removed is reflected in the docs
-
-## Adding a new deployment adapter (in-tree)
-
-1. `src/langgraph_forge/deploy/<name>.py` — satisfy the Protocol (`name`, `requires_extras`, `prepare`, `invoke`, `template_fragment`). Import the cloud SDK **lazily** inside `prepare` / `invoke`.
-2. `src/langgraph_forge/scaffold/templates/deploy_fragments/<name>/src/{{ package_name }}/deploy.py.j2` — the scaffolded `deploy.py` importing your adapter.
-3. `pyproject.toml` — add extras + entry-point declaration under `langgraph_forge.deployment_adapters`.
-4. `tests/unit/deploy/test_<name>.py` — Protocol conformance + extras + stub behaviour.
-
-## Adding a new deployment adapter (out of tree)
-
-Publish your own package (`langgraph-forge-modal`, `langgraph-forge-cloudflare`, ...) with an entry-point targeting the `langgraph_forge.deployment_adapters` group. Users `pip install your-package` and the adapter appears in `list-deploy` automatically. No changes to this repo required.
-
-## Releasing
-
-Maintainers only. See internal docs (coming with phase 9 of the plan).
+The README has a permanent "Not included — by design" list. PRs touching
+these areas (HTTP API, auth, prompt registry, streaming helpers, etc.)
+will be closed without review unless the issue was explicitly approved
+beforehand.
 
 ## Reporting security issues
 
-See [SECURITY.md](SECURITY.md) for the private-disclosure process.
+See [SECURITY.md](SECURITY.md). **Do not file public issues for security bugs.**
+
+## See also
+
+- [`MAINTAINERS.md`](MAINTAINERS.md) — release process and repo
+  governance (relevant if you eventually become a maintainer).
+- [`.claude/rules/git-workflow.md`](./.claude/rules/git-workflow.md) — the
+  full TDD + Conventional Commits + branch rules.
+- [`.claude/rules/unit-testing.md`](./.claude/rules/unit-testing.md) — the
+  four check categories, one-assertion rule, mock discipline.

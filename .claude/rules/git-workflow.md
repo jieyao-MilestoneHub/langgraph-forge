@@ -1,26 +1,80 @@
 # Git Workflow Rules
 
-## Branch Strategy (CRITICAL)
+## Branch Model — trunk-based
 
-- **`develop`** — active development branch; all work happens here
-- **`main`** — release branch; NEVER push or deploy directly
+- **`main`** is the only long-lived branch. It is always green on CI.
+- **No `develop` branch.** A two-branch model adds ceremony without
+  reducing risk for a project this size.
+- Releases are **tags** on `main` (`v0.x.ya<n>`, `v0.x.yrc<n>`,
+  `v0.x.y`). There is no `release/*` branch.
+- Topic branches live in **forks** (for external contributors) or as
+  short-lived branches (for maintainers). They are deleted after
+  merge.
 
 ## Hard Rules
 
-1. **All commits go to `develop`**, never directly to `main`
-2. **`develop` → `main` ONLY via Pull Request** — no direct merges, no force pushes
-3. **Never run `gh workflow run` without `--ref develop`** — omitting `--ref` defaults to `main`
-4. **Never trigger deploys targeting `main`** unless explicitly asked by the user after a PR merge
-5. **`main` merges only at release cuts** (`0.x.ya`, `0.x.yrc1`, `0.x.y`) — routine feature work stays on `develop`
-6. **Never skip hooks** (`--no-verify`, `--no-gpg-sign`) — if a hook fails, fix the root cause
-7. **Never push the `v*` tag before the maintainer is ready to release** — pushing triggers the OIDC publish workflow against PyPI
+1. **`main` only receives commits via squash-merged PRs**, never direct push
+   for non-maintainers. Maintainers may push trivial chores (release version
+   bumps) directly only when CI is already green for the change.
+2. **External contributors use fork → PR**. They never push to upstream
+   `main`. Branch protection enforces this; do not weaken it.
+3. **Never force-push to `main`**, even as maintainer. History on `main`
+   is permanent.
+4. **Never run `gh workflow run` without `--ref main`** — omitting `--ref`
+   defaults to whatever branch happens to be set as default; explicit is
+   safer.
+5. **Never skip hooks** (`--no-verify`, `--no-gpg-sign`) — if a hook fails,
+   fix the root cause.
+6. **Never push the `v*` tag before everything below is true**:
+   - CI on `main` is green for the commit being tagged.
+   - PyPI trusted publisher is configured for this repo + workflow + environment.
+   - The maintainer is ready to approve the `pypi` environment deployment.
+
+## Fork-and-PR workflow (external contributors)
+
+```bash
+# One-time: fork on GitHub, then
+git clone https://github.com/<your-username>/langgraph-forge.git
+cd langgraph-forge
+git remote add upstream https://github.com/jieyao-MilestoneHub/langgraph-forge.git
+
+# For every change
+git fetch upstream
+git switch main
+git merge --ff-only upstream/main          # always fast-forward; never reverse-merge
+
+git switch -c feat/<issue#>-<short-slug>
+# ... TDD cycle, commits ...
+git push origin feat/<issue#>-<short-slug>
+
+# Open PR via the GitHub UI: source = your fork's branch, target = upstream/main
+```
+
+PR titles must follow Conventional Commits because the maintainer
+squash-merges and the PR title becomes the commit message.
+
+## Maintainer workflow
+
+```bash
+# Topic branch on upstream
+git switch main
+git pull --ff-only
+git switch -c chore/<short-slug>
+# ... commits ...
+git push -u origin chore/<short-slug>
+
+# PR via gh
+gh pr create --base main --head chore/<short-slug>
+
+# Squash-merge after CI green
+gh pr merge --squash --delete-branch
+```
 
 ## TDD Discipline (CRITICAL — applies to every commit adding behaviour)
 
 New behaviour lands as a **test → feat pair**, in that order. No exceptions
 for "it's a small change", "I'll add tests later", or "this is just
-plumbing". The discipline is the safety net we rely on throughout every
-other rule.
+plumbing". The discipline is the safety net every other rule depends on.
 
 ### The red → green → refactor cycle
 
@@ -60,7 +114,7 @@ all** of the following hold:
 
 When in doubt, split.
 
-### Four check categories (required — see `.claude/rules/unit-testing.md`)
+### Four check categories (required — see `unit-testing.md`)
 
 Each public behaviour must have tests across **every applicable** category:
 
@@ -103,6 +157,8 @@ broken build; broken builds block every other contributor.
   for external SDK shapes. Drift there bites silently.
 - **`pytest.mark.skip` as a way to land red tests** — if the test cannot
   be made green right now, don't land the test yet.
+- **Reverse-merging `main` into a topic branch.** Always fast-forward
+  `main` and rebase the topic on top, or merge the topic into `main`.
 
 ## Commit Message Convention (Conventional Commits)
 
@@ -129,50 +185,57 @@ prepare to build`. The `commit-msg` pre-commit hook
 
 ## Commit Size
 
-- **≤ 300 LOC diff per commit** excluding generated lock files
+- **≤ 300 LOC diff per commit** excluding generated lock files.
 - **One behaviour per test commit, one feature per feat commit** — if you
-  type "and" in the subject line, split
+  type "and" in the subject line, split.
 
-## Correct Commands
+## Issue claiming protocol (for non-maintainers)
+
+1. Comment `I'd like to take this` on the issue.
+2. Wait for maintainer to assign — usually within 3 business days.
+3. Open a draft PR within **7 days** of assignment (a single failing test
+   counts as the start signal).
+4. **14 days of no commit activity** on the assigned PR may trigger
+   reassignment. Comment to request an extension if needed; almost always
+   granted.
+
+Do not open a PR for an issue that hasn't been assigned to you, except for
+trivial typo fixes which can skip the assignment step.
+
+## Release flow (maintainer only)
 
 ```bash
-# Work on develop
-git switch develop
-git pull
+# Verify CI is green
+gh run list --branch main --limit 1
 
-# Short-lived feature branch
-git switch -c feat/my-thing
+# Bump version + commit
+echo '__version__ = "0.x.y"' > src/langgraph_forge/_version.py
+git add src/langgraph_forge/_version.py
+git commit -m "chore(release): 0.x.y"
+git push origin main
 
-# After the red/green cycle, push the branch
-git push -u origin feat/my-thing
-
-# Open PR targeting develop (NOT main)
-gh pr create --base develop --head feat/my-thing
-
-# Trigger CI on develop (always specify --ref)
-gh workflow run ci.yml --ref develop
-
-# Release cut: PR develop → main, then tag on main after merge
-gh pr create --base main --head develop --title "Release 0.1.0a1"
-# After the PR merges:
-git switch main && git pull
-git tag -a v0.1.0a1 -m "langgraph-forge 0.1.0a1"
-git push origin v0.1.0a1   # triggers publish.yml (OIDC → PyPI)
+# Tag — push triggers publish.yml
+git tag -a v0.x.y -m "langgraph-forge 0.x.y"
+git push origin v0.x.y
 ```
 
-## Environment Mapping
+The `pypi` environment in GitHub Actions is configured with required
+reviewers, so the publish job pauses for explicit human approval before
+running `pypa/gh-action-pypi-publish`. This is the second safety belt
+in case the tag was pushed accidentally.
 
-| Branch / Tag | Workflow fired | Target |
+## Workflow trigger reference
+
+| Event | Workflow fired | Effect |
 |---|---|---|
-| push to `develop` | `ci.yml` | matrix lint / type / test |
-| PR to `develop` | `ci.yml` | matrix lint / type / test |
-| push `v*` tag | `publish.yml` | PyPI (via OIDC trusted publishing) |
+| Push to `main` | `ci.yml` | matrix lint / type / test |
+| PR targeting `main` | `ci.yml` | matrix lint / type / test |
+| Push `v*` tag | `publish.yml` | build → (await `pypi` env approval) → PyPI → GH release |
 
 ## Related Rules
 
-- `.claude/rules/unit-testing.md` — the four check categories referenced in
-  the TDD section and the one-assertion-per-test rule
-- `.claude/rules/coding-style.md` — immutability, file organisation, error
-  handling
-- `.claude/rules/planning-discipline.md` — when to interrupt the plan to
-  fix a structural issue instead of mechanically continuing
+- `unit-testing.md` — the four check categories referenced above and the
+  one-assertion-per-test rule.
+- `coding-style.md` — immutability, file organisation, error handling.
+- `planning-discipline.md` — when to interrupt the plan to fix a structural
+  issue instead of mechanically continuing.
