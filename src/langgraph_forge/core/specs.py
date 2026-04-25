@@ -186,6 +186,39 @@ class MultiAgentSpec(BaseModel):
         return data
 
 
+class TeamSpec(BaseModel):
+    """A domain supervisor with its own specialists, used in hierarchical patterns.
+
+    Hierarchical multi-agent topologies layer two supervisor levels:
+    a top-level supervisor routes to *teams*, and each team is itself
+    a supervisor managing its own specialists. ``TeamSpec`` describes
+    one such team. The hierarchical factory turns each TeamSpec into
+    a compiled supervisor subgraph and slots it into the top-level
+    supervisor's specialists list (via :attr:`SpecialistSpec.subgraph`),
+    so the composition is recursive with zero new wiring logic.
+
+    Fields:
+    - ``name`` -- routing key the top supervisor uses
+      (``delegate_to_<name>``). Same regex as SpecialistSpec.name so
+      both share the identifier-shaped contract.
+    - ``supervisor_model`` -- ModelSpec for *this team's* supervisor.
+      Each team can run a different LLM (cheaper for triage teams,
+      stronger for expert teams).
+    - ``supervisor_prompt`` -- the prompt that gives this team's
+      supervisor its domain context.
+    - ``specialists`` -- the workers under this team's supervisor.
+      They follow the usual SpecialistSpec encoding split (ReAct or
+      subgraph).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(..., pattern=r"^[a-z][a-z0-9_]{0,63}$")
+    supervisor_model: ModelSpec
+    supervisor_prompt: str
+    specialists: list[SpecialistSpec]
+
+
 @dataclass(frozen=True, slots=True)
 class ThreadConfig:
     """Typed wrapper around the LangGraph runtime configurable dict.
