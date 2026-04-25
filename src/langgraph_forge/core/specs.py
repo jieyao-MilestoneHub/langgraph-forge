@@ -163,8 +163,13 @@ class MultiAgentSpec(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
 
-    specialists: list["SpecialistSpec"]
-    state_schema: type = Field(default=None)  # filled in __init__ default below
+    specialists: list[SpecialistSpec]
+    # state_schema typed as Any rather than `type` because (a) the field's
+    # actual default is set by the model_validator below (None gets filled
+    # to ForgeState), and (b) pyright cannot meaningfully narrow to
+    # "this is a TypedDict class" without a Protocol upstream does not
+    # provide. Run-time the value is always a TypedDict subclass.
+    state_schema: Any = Field(default=None)
     checkpointer: BaseCheckpointSaver | None = None
     interrupt_before: tuple[str, ...] = ()
     interrupt_after: tuple[str, ...] = ()

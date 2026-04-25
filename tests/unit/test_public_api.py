@@ -28,14 +28,22 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "SpecialistSpec",
         "MCPConfig",
         "MCPServerConfig",
+        "MultiAgentSpec",  # Phase 1 — topology-agnostic multi-agent config
+        "ThreadConfig",  # Phase 1 — typed wrapper for LangGraph configurable dict
         # Default state schema
         "ForgeState",
+        # Reducers — Phase 1 (non-trivial state-channel merge functions)
+        "merge_dict_reducer",
+        "append_unique_reducer",
         # Builder factories
         "get_model",
         "create_single_agent",
         "create_supervisor_agent",
         "load_mcp_tools",
         "get_checkpointer",
+        # Runtime helpers — Phase 1
+        "replay",
+        "resume",
         # Deployment surface
         "DeploymentAdapter",
         "DirectAdapter",

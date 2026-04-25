@@ -35,15 +35,30 @@ def create_supervisor_agent(
     The resulting graph is compiled with the optional checkpointer so
     the returned object is ready to ``ainvoke``.
     """
-    workers = [
-        create_react_agent(
-            model=get_model(spec.model),
-            tools=spec.tools,
-            prompt=spec.prompt,
-            name=spec.name,
+    # Phase-1 bridge: the legacy supervisor signature only handles ReAct
+    # specialists (prompt + model). Subgraph-mode specialists land in
+    # Phase 2's _common.specialist_to_node refactor; until then, raise a
+    # clear error rather than silently passing None to get_model.
+    workers = []
+    for spec in specialists:
+        if spec.subgraph is not None:
+            raise NotImplementedError(
+                f"specialist {spec.name!r} is in subgraph mode; the legacy "
+                "supervisor signature does not support subgraph specialists. "
+                "Phase 2's MultiAgentSpec-based supervisor refactor will."
+            )
+        # Type narrowing: spec.subgraph is None -> spec.model is not None
+        # (per SpecialistSpec._validate_encoding). Pyright cannot infer
+        # this cross-field invariant; assert to satisfy the checker.
+        assert spec.model is not None
+        workers.append(
+            create_react_agent(
+                model=get_model(spec.model),
+                tools=spec.tools,
+                prompt=spec.prompt,
+                name=spec.name,
+            )
         )
-        for spec in specialists
-    ]
 
     # Upstream's `create_supervisor` annotates `agents` as `list[Pregel]`,
     # but `create_react_agent` returns `CompiledStateGraph` which is a

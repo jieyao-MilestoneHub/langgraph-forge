@@ -14,9 +14,7 @@ from langgraph_forge.core.state import ForgeState
 
 
 def _spec(name: str = "alpha") -> SpecialistSpec:
-    return SpecialistSpec(
-        name=name, prompt="p", model=ModelSpec(model="gpt-4o", provider="openai")
-    )
+    return SpecialistSpec(name=name, prompt="p", model=ModelSpec(model="gpt-4o", provider="openai"))
 
 
 class TestMultiAgentSpecConstruction:
@@ -75,9 +73,7 @@ class TestMultiAgentSpecValidation:
 
 class TestMultiAgentSpecInterruptDeclarations:
     def test_interrupt_before_round_trips_node_names(self) -> None:
-        spec = MultiAgentSpec(
-            specialists=[_spec()], interrupt_before=("research",)
-        )
+        spec = MultiAgentSpec(specialists=[_spec()], interrupt_before=("research",))
 
         assert spec.interrupt_before == ("research",)
 

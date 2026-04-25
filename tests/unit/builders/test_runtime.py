@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from langgraph.types import Command
 
 from langgraph_forge.builders.runtime import replay, resume
 from langgraph_forge.core.specs import ThreadConfig
@@ -58,8 +59,6 @@ class TestReplay:
 class TestResume:
     @pytest.mark.asyncio
     async def test_calls_ainvoke_with_command_resume(self) -> None:
-        from langgraph.types import Command
-
         graph = MagicMock()
         graph.ainvoke = AsyncMock(return_value={"messages": []})
         thread = ThreadConfig(thread_id="run-42")

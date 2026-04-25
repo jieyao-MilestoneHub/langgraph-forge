@@ -52,9 +52,7 @@ class TestThreadConfigToLangGraph:
         # dict shape LangGraph expects has thread_id and checkpoint_ns.
         cfg = ThreadConfig(thread_id="run-42")
 
-        assert cfg.to_langgraph() == {
-            "configurable": {"thread_id": "run-42", "checkpoint_ns": ""}
-        }
+        assert cfg.to_langgraph() == {"configurable": {"thread_id": "run-42", "checkpoint_ns": ""}}
 
     def test_includes_checkpoint_id_when_set(self) -> None:
         cfg = ThreadConfig(thread_id="run-42", checkpoint_id="ckpt-7")
