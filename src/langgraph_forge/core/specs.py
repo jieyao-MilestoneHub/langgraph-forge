@@ -7,6 +7,7 @@ Mutating a spec after construction is a bug.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Literal, Self
 
 from langchain_core.tools import BaseTool
@@ -93,3 +94,45 @@ class MCPConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     servers: dict[str, MCPServerConfig]
+
+
+@dataclass(frozen=True, slots=True)
+class ThreadConfig:
+    """Typed wrapper around the LangGraph runtime configurable dict.
+
+    LangGraph's runtime config carries thread isolation, namespace
+    scoping, and replay targeting in a nested dict::
+
+        {"configurable": {"thread_id": ..., "checkpoint_ns": ..., "checkpoint_id": ...}}
+
+    Memorising that shape and getting the keys right every call is a
+    typo magnet (``thread-id`` vs ``thread_id``, missing the
+    ``configurable`` wrapper). :class:`ThreadConfig` makes the
+    intent typed and immutable: construct it once per
+    thread / namespace / replay target, then call :meth:`to_langgraph`
+    when handing it to ``graph.ainvoke`` / ``graph.astream`` /
+    :func:`langgraph_forge.builders.runtime.replay`.
+
+    A frozen :class:`dataclasses.dataclass` (rather than a Pydantic
+    model) because the surface is one method and three primitive
+    fields; pulling Pydantic in for that is over-engineering.
+    """
+
+    thread_id: str
+    checkpoint_ns: str = ""
+    checkpoint_id: str | None = None
+
+    def to_langgraph(self) -> dict[str, Any]:
+        """Render the LangGraph configurable dict.
+
+        ``checkpoint_id`` is omitted when None so the graph treats the
+        invocation as "continue this thread" rather than "replay from
+        a specific checkpoint".
+        """
+        configurable: dict[str, Any] = {
+            "thread_id": self.thread_id,
+            "checkpoint_ns": self.checkpoint_ns,
+        }
+        if self.checkpoint_id is not None:
+            configurable["checkpoint_id"] = self.checkpoint_id
+        return {"configurable": configurable}
