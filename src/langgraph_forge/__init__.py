@@ -11,9 +11,9 @@ from langgraph_forge._version import __version__
 from langgraph_forge.builders.checkpoint import get_checkpointer
 from langgraph_forge.builders.llm import get_model
 from langgraph_forge.builders.mcp import load_mcp_tools
+from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
 from langgraph_forge.builders.runtime import replay, resume
 from langgraph_forge.builders.single import create_single_agent
-from langgraph_forge.builders.supervisor import create_supervisor_agent
 from langgraph_forge.core.errors import (
     ForgeConfigError,
     ForgeError,

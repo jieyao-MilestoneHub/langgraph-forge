@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch, sentinel
 
+from langgraph.checkpoint.base import BaseCheckpointSaver
+
 from langgraph_forge.builders.multiagent.supervisor import create_supervisor_agent
 from langgraph_forge.core.specs import (
     ModelSpec,
@@ -26,12 +28,8 @@ class TestCreateSupervisorAgentComposition:
         # We verify both calls happen rather than re-testing specialist_to_node.
         spec = MultiAgentSpec(specialists=[_spec("a"), _spec("b")])
         with (
-            patch(
-                "langgraph_forge.builders.multiagent.supervisor.specialist_to_node"
-            ) as mock_node,
-            patch(
-                "langgraph_forge.builders.multiagent.supervisor.create_supervisor"
-            ),
+            patch("langgraph_forge.builders.multiagent.supervisor.specialist_to_node") as mock_node,
+            patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor"),
         ):
             create_supervisor_agent(
                 spec,
@@ -49,9 +47,7 @@ class TestCreateSupervisorAgentComposition:
                 "langgraph_forge.builders.multiagent.supervisor.specialist_to_node",
                 side_effect=workers,
             ),
-            patch(
-                "langgraph_forge.builders.multiagent.supervisor.create_supervisor"
-            ) as mock_sup,
+            patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor") as mock_sup,
         ):
             create_supervisor_agent(
                 spec,
@@ -66,9 +62,7 @@ class TestCreateSupervisorAgentComposition:
         spec = MultiAgentSpec(specialists=[_spec()])
         with (
             patch("langgraph_forge.builders.multiagent.supervisor.specialist_to_node"),
-            patch(
-                "langgraph_forge.builders.multiagent.supervisor.create_supervisor"
-            ) as mock_sup,
+            patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor") as mock_sup,
         ):
             create_supervisor_agent(
                 spec,
@@ -85,9 +79,13 @@ class TestCreateSupervisorAgentComposition:
 
 class TestCompileWiring:
     def test_compiled_with_spec_checkpointer(self) -> None:
+        # MultiAgentSpec.checkpointer is typed BaseCheckpointSaver | None,
+        # so sentinel objects fail Pydantic validation. spec= the mock to
+        # the real type so isinstance / pydantic accept it.
+        fake_checkpointer = MagicMock(spec=BaseCheckpointSaver)
         spec = MultiAgentSpec(
             specialists=[_spec()],
-            checkpointer=sentinel.checkpointer,  # type: ignore[arg-type]
+            checkpointer=fake_checkpointer,
         )
         sup_graph = MagicMock(name="supervisor_graph")
         with (
@@ -106,7 +104,7 @@ class TestCompileWiring:
         # checkpointer is the only required compile() kwarg here; interrupts
         # land in the dedicated tests below.
         _, kwargs = sup_graph.compile.call_args
-        assert kwargs["checkpointer"] is sentinel.checkpointer
+        assert kwargs["checkpointer"] is fake_checkpointer
 
     def test_interrupt_before_passed_to_compile(self) -> None:
         spec = MultiAgentSpec(
@@ -128,7 +126,10 @@ class TestCompileWiring:
             )
 
         _, kwargs = sup_graph.compile.call_args
-        assert kwargs["interrupt_before"] == ("alpha",)
+        # spec stores tuples for immutability; supervisor converts to list
+        # at the compile() boundary because upstream's signature requires
+        # list[str] | None. Test asserts the post-conversion shape.
+        assert kwargs["interrupt_before"] == ["alpha"]
 
     def test_interrupt_after_passed_to_compile(self) -> None:
         spec = MultiAgentSpec(
@@ -150,7 +151,7 @@ class TestCompileWiring:
             )
 
         _, kwargs = sup_graph.compile.call_args
-        assert kwargs["interrupt_after"] == ("alpha",)
+        assert kwargs["interrupt_after"] == ["alpha"]
 
     def test_returns_compiled_graph(self) -> None:
         spec = MultiAgentSpec(specialists=[_spec()])
@@ -188,9 +189,7 @@ class TestSubgraphSpecialistAccepted:
                 "langgraph_forge.builders.multiagent.supervisor.specialist_to_node",
                 return_value=fake_subgraph,
             ),
-            patch(
-                "langgraph_forge.builders.multiagent.supervisor.create_supervisor"
-            ) as mock_sup,
+            patch("langgraph_forge.builders.multiagent.supervisor.create_supervisor") as mock_sup,
         ):
             create_supervisor_agent(
                 spec,

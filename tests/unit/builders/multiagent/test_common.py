@@ -46,9 +46,7 @@ class TestSpecialistToNodeReActMode:
         spec = _react_spec()
         with (
             patch("langgraph_forge.builders.multiagent._common.create_react_agent"),
-            patch(
-                "langgraph_forge.builders.multiagent._common.get_model"
-            ) as mock_get,
+            patch("langgraph_forge.builders.multiagent._common.get_model") as mock_get,
         ):
             specialist_to_node(spec)
 
@@ -70,9 +68,7 @@ class TestSpecialistToNodeSubgraphMode:
         fake_subgraph = MagicMock(name="compiled_subgraph")
         spec = SpecialistSpec(name="encoded_worker", subgraph=fake_subgraph)
 
-        with patch(
-            "langgraph_forge.builders.multiagent._common.create_react_agent"
-        ) as mock_react:
+        with patch("langgraph_forge.builders.multiagent._common.create_react_agent") as mock_react:
             specialist_to_node(spec)
 
         mock_react.assert_not_called()
@@ -83,9 +79,7 @@ class TestSpecialistToNodeSubgraphMode:
         fake_subgraph = MagicMock(name="compiled_subgraph")
         spec = SpecialistSpec(name="encoded_worker", subgraph=fake_subgraph)
 
-        with patch(
-            "langgraph_forge.builders.multiagent._common.get_model"
-        ) as mock_get:
+        with patch("langgraph_forge.builders.multiagent._common.get_model") as mock_get:
             specialist_to_node(spec)
 
         mock_get.assert_not_called()

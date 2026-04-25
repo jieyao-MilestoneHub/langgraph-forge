@@ -47,8 +47,8 @@ def specialist_to_node(spec: SpecialistSpec) -> object:
     # ReAct mode: validator guarantees prompt and model are not None when
     # subgraph is None, so the assertions document a cross-field
     # invariant for type checkers without changing runtime behaviour.
-    assert spec.prompt is not None  # noqa: S101 -- validator-enforced
-    assert spec.model is not None  # noqa: S101 -- validator-enforced
+    assert spec.prompt is not None
+    assert spec.model is not None
     return create_react_agent(
         model=get_model(spec.model),
         tools=spec.tools,
