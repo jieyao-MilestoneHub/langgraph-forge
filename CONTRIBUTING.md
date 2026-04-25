@@ -135,12 +135,41 @@ in the PR's history but don't pollute `main`.
 By submitting a PR you agree your contribution is licensed under the MIT
 license (the project license). No CLA, no DCO sign-off.
 
+## Scope check (read before adding any new public symbol)
+
+If your PR adds, removes, or renames a symbol in
+`langgraph_forge.__init__.__all__`, run through these three questions
+in order before opening review. A `no` at any step short-circuits to
+"not in scope; this lives in user code or another package".
+
+1. **Does it standardise a config shape, compose LangGraph
+   primitives, unify the import surface, provide an extension
+   contract, or scaffold a runnable starting point?** (See
+   [`docs/explanation/initialization-boundary.md`](./docs/explanation/initialization-boundary.md)
+   § "The package's job".) If no, stop.
+2. **Is it provider-agnostic, pattern-agnostic, and
+   deployment-agnostic?** A symbol that only makes sense for one
+   provider, one execution pattern, or one deployment is somebody's
+   adapter or template — not a core public symbol.
+3. **Does it avoid every item in the permanent anti-scope list?**
+   The boundary doc enumerates it (HTTP / auth / prompt registry /
+   eval / observability / streaming / etc.). PRs touching these
+   areas close without review unless the issue was explicitly
+   approved beforehand.
+
+The public surface is locked by
+[`tests/unit/test_public_api.py`](./tests/unit/test_public_api.py)
+— any change to `__all__` triggers a test diff that the reviewer
+must approve. Use that diff as the review checkpoint.
+
 ## What's out of scope
 
-The README has a permanent "Not included — by design" list. PRs touching
-these areas (HTTP API, auth, prompt registry, streaming helpers, etc.)
-will be closed without review unless the issue was explicitly approved
-beforehand.
+The README has a permanent "Not included — by design" list, mirrored
+in detail at
+[`docs/explanation/initialization-boundary.md`](./docs/explanation/initialization-boundary.md)
+§ "The package will never do these". PRs touching those areas
+(HTTP API, auth, prompt registry, streaming helpers, etc.) close
+without review unless the issue was explicitly approved beforehand.
 
 ## Reporting security issues
 
