@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, Self
 
 from langchain_core.tools import BaseTool
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -94,6 +95,49 @@ class MCPConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     servers: dict[str, MCPServerConfig]
+
+
+class MultiAgentSpec(BaseModel):
+    """Topology-agnostic configuration consumed by every multi-agent factory.
+
+    Pattern-specific extras (supervisor_prompt, default_active_agent,
+    classifier model) ride as keyword arguments to the factory and
+    deliberately do NOT live on this spec -- otherwise every pattern
+    would have to ignore the irrelevant fields, and the spec would
+    grow into convilyn-style envelope territory.
+
+    Each field maps to a layer of the project boundary
+    (see ``docs/explanation/initialization-boundary.md``):
+
+    - ``specialists`` -- the reasoning slots (Line 1). Each
+      SpecialistSpec inside chooses LLM ReAct or encoded subgraph.
+    - ``state_schema`` -- typed channels (Line 2 infrastructure).
+      Defaults to ForgeState (just messages). Subclass to add domain
+      channels.
+    - ``checkpointer`` -- persistence infrastructure (Line 2).
+    - ``interrupt_before`` / ``interrupt_after`` -- static interrupt
+      declarations (Line 2 infrastructure); the factory passes them
+      to graph.compile().
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
+
+    specialists: list["SpecialistSpec"]
+    state_schema: type = Field(default=None)  # filled in __init__ default below
+    checkpointer: BaseCheckpointSaver | None = None
+    interrupt_before: tuple[str, ...] = ()
+    interrupt_after: tuple[str, ...] = ()
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_state_schema(cls, data: Any) -> Any:
+        # ForgeState is in core.state which would create a circular import
+        # if imported at module top-level; resolve here.
+        if isinstance(data, dict) and data.get("state_schema") is None:
+            from langgraph_forge.core.state import ForgeState  # noqa: PLC0415
+
+            data["state_schema"] = ForgeState
+        return data
 
 
 @dataclass(frozen=True, slots=True)
