@@ -68,6 +68,20 @@ channels", or "talk to another slot directly". Those would be
 infrastructure decisions, and infrastructure is the framework's
 responsibility.
 
+**One known asymmetry: `create_single_agent`.** The single-agent
+factory delegates entirely to `langgraph.prebuilt.create_react_agent`,
+which compiles its own internal graph and returns the result; it does
+not expose the `interrupt_before` / `interrupt_after` knobs on its
+constructor. Consequently `create_single_agent` accepts only
+`checkpointer` and not the static-interrupt declarations every
+multi-agent factory accepts. This is upstream-driven, not a design
+choice on our side; wrapping the prebuilt's compiled graph to
+re-apply interrupts would mean reaching past the upstream contract,
+trading parity for fragility. We accept the asymmetry — human-in-the-
+loop on a one-agent baseline is rare, and any user who needs it can
+escape-hatch to `create_custom_agent` and author the ReAct node
+directly.
+
 ### Line 3 — Communication between slots is structured
 
 Agents never talk to each other in free-form prose passed by name.
