@@ -1,13 +1,12 @@
-"""Tests for langgraph_forge.builders.runtime: replay + resume."""
+"""Tests for langgraph_forge.builders.runtime: replay (resume dropped in 0.3.0a1)."""
 
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from langgraph.types import Command
 
-from langgraph_forge.builders.runtime import replay, resume
+from langgraph_forge.builders.runtime import replay
 from langgraph_forge.core.specs import ThreadConfig
 
 
@@ -54,41 +53,3 @@ class TestReplay:
         await replay(graph, thread)
 
         graph.aupdate_state.assert_not_awaited()
-
-
-class TestResume:
-    @pytest.mark.asyncio
-    async def test_calls_ainvoke_with_command_resume(self) -> None:
-        graph = MagicMock()
-        graph.ainvoke = AsyncMock(return_value={"messages": []})
-        thread = ThreadConfig(thread_id="run-42")
-
-        await resume(graph, thread, value="approved")
-
-        # The first positional arg to ainvoke must be a Command(resume="approved").
-        call_args = graph.ainvoke.await_args
-        passed = call_args.args[0]
-        assert isinstance(passed, Command)
-        assert passed.resume == "approved"
-
-    @pytest.mark.asyncio
-    async def test_returns_ainvoke_result(self) -> None:
-        graph = MagicMock()
-        graph.ainvoke = AsyncMock(return_value={"messages": ["resumed"]})
-        thread = ThreadConfig(thread_id="run-42")
-
-        result = await resume(graph, thread, value="ok")
-
-        assert result == {"messages": ["resumed"]}
-
-    @pytest.mark.asyncio
-    async def test_passes_thread_config_dict(self) -> None:
-        graph = MagicMock()
-        graph.ainvoke = AsyncMock(return_value={})
-        thread = ThreadConfig(thread_id="run-42", checkpoint_ns="tenant-a")
-
-        await resume(graph, thread, value="ok")
-
-        # Second positional arg is the configurable dict.
-        call_args = graph.ainvoke.await_args
-        assert call_args.args[1] == thread.to_langgraph()

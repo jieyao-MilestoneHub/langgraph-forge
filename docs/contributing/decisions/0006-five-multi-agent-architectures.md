@@ -44,8 +44,8 @@ separates **domain reasoning slots** (where user expertise lives,
 in either LLM or encoded form) from **deterministic infrastructure**
 (everything else, always built by the framework). They share one
 foundation (`MultiAgentSpec`, `SpecialistSpec` with `subgraph`
-support, `ThreadConfig`, common reducers, `replay` / `resume`
-helpers) so that adding a sixth pattern is one new file, one new
+support, `ThreadConfig`, common reducers, `replay` helper)
+so that adding a sixth pattern is one new file, one new
 template, one new enum value — zero changes to the existing five.
 
 ### The three-layer boundary
@@ -103,7 +103,7 @@ exported through `langgraph_forge.__init__.__all__` and locked by
 | `RouterSpec` | A route name + classifier description + target specialist | Router |
 | `ThreadConfig` | Frozen dataclass for `thread_id` / `checkpoint_ns` / `checkpoint_id` | All factories (via runtime helpers) |
 | `merge_dict_reducer`, `append_unique_reducer` | Custom state-channel merge functions LangGraph does not ship | User extensions of `ForgeState` |
-| `replay`, `resume` | Re-run from checkpoint; resume after interrupt | All factories |
+| `replay` | Re-run from checkpoint, optional state-modification fork | All factories |
 
 ### CLI surface
 
@@ -134,9 +134,11 @@ value, one ADR.
   "checkpoint_id": ...}})` idiom. `modify` triggers
   `graph.update_state` first for a counterfactual fork.
 - **Interrupt**: every factory accepts `interrupt_before` /
-  `interrupt_after` lists of node names; `resume(graph, thread,
-  value)` is the matched continuation. Dynamic in-node `interrupt(...)`
-  is not wrapped — users import directly from `langgraph.types`.
+  `interrupt_after` lists of node names. To continue after a pause,
+  use upstream `Command(resume=value)` directly — see
+  `docs/how-to/resume-after-interrupt.md` for the recipe. Dynamic
+  in-node `interrupt(...)` is not wrapped — users import directly
+  from `langgraph.types`.
 
 ## Consequences
 
@@ -156,11 +158,12 @@ value, one ADR.
 
 **Negative:**
 
-- 11 new public symbols (`MultiAgentSpec`, `TeamSpec`, `RouterSpec`,
-  `ThreadConfig`, two reducers, `replay`, `resume`, three new
-  factories). The public API stability test now locks 30 names
-  instead of 19. This is an intentional commitment; future drift
-  surfaces as a test diff.
+- 10 new public symbols (`MultiAgentSpec`, `TeamSpec`, `RouterSpec`,
+  `ThreadConfig`, two reducers, `replay`, three new factories;
+  `resume` was added in 0.2.0a1 and dropped in 0.3.0a1 per the
+  trade-off audit). The public API stability test now locks 30
+  names. This is an intentional commitment; future drift surfaces
+  as a test diff.
 - Breaking change to `create_supervisor_agent` signature (now takes
   `MultiAgentSpec` not loose kwargs). Pre-1.0 minor bump
   (`0.1.x → 0.2.0`) per VERSIONING.md § B.

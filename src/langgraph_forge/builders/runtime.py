@@ -1,21 +1,26 @@
-"""Runtime helpers for replay + resume.
+"""Runtime helpers for replay (counterfactual fork supported).
 
-These wrap LangGraph's ainvoke + Command(resume=...) idioms behind
-``ThreadConfig`` so users do not memorise the
+`replay` wraps LangGraph's ``aupdate_state`` + ``ainvoke`` idioms
+behind ``ThreadConfig`` so users do not memorise the
 ``{"configurable": {"thread_id": ..., "checkpoint_id": ...}}`` shape
-or the ``Command`` import path.
+when re-running from a checkpoint, with optional state modification
+for counterfactual analysis.
 
-Both helpers are infrastructure (Line 2 of the project boundary):
-they manipulate the graph's runtime config but never reason about
-it. Domain decisions about *what* to resume with or *which*
-counterfactual to fork to are the user's call.
+Resume-after-interrupt was removed in 0.3.0a1 because the helper
+body was a single ``Command(resume=value)`` call -- pure 1-line
+sugar with no semantic carry. The upstream idiom is documented in
+``docs/how-to/resume-after-interrupt.md``; users import
+``langgraph.types.Command`` directly.
+
+`replay` is infrastructure (Line 2 of the project boundary): it
+manipulates the graph's runtime config but never reasons about it.
+Domain decisions about *which* counterfactual to fork to are the
+user's call.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-
-from langgraph.types import Command
 
 if TYPE_CHECKING:
     from langgraph_forge.core.specs import ThreadConfig
@@ -43,14 +48,3 @@ async def replay(
     if modify is not None:
         await graph.aupdate_state(config, modify)
     return await graph.ainvoke(None, config)
-
-
-async def resume(graph: Any, thread: ThreadConfig, value: Any) -> dict[str, Any]:
-    """Resume an interrupted graph with the supplied human-in-the-loop value.
-
-    Wraps the ``Command(resume=value)`` idiom so callers do not need
-    to import ``langgraph.types.Command`` themselves. ``value`` flows
-    into whatever ``interrupt(...)`` call site the graph paused at;
-    its shape is the user's contract with their interrupt callers.
-    """
-    return await graph.ainvoke(Command(resume=value), thread.to_langgraph())

@@ -153,9 +153,9 @@ without re-implementing:
   graph instead of a ReAct worker. Hierarchical exploits this.
 - **`ThreadConfig`** — the typed wrapper around the
   `{"configurable": {"thread_id": ...}}` dict. Used by `replay` and
-  `resume`.
-- **`replay` / `resume`** — runtime helpers for re-running from a
-  checkpoint and continuing after an interrupt.
+  any direct `graph.ainvoke(...)` call.
+- **`replay`** — runtime helper for re-running from a checkpoint,
+  with optional state modification for counterfactual forks.
 - **`merge_dict_reducer`, `append_unique_reducer`** — non-trivial
   state-channel reducers users would otherwise mis-write.
 
@@ -228,13 +228,10 @@ spec = MultiAgentSpec(
 Dynamic in-node interrupts use LangGraph's own `interrupt()` —
 import directly from `langgraph.types`.
 
-To resume:
-
-```python
-from langgraph_forge import resume
-
-await resume(graph, ThreadConfig(thread_id="run-42"), human_supplied_value)
-```
+To resume after an interrupt, use LangGraph's own `Command(resume=...)`
+idiom directly — see
+[`../how-to/resume-after-interrupt.md`](../how-to/resume-after-interrupt.md)
+for the recipe.
 
 ## What we do not provide
 

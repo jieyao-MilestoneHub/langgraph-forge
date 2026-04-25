@@ -50,9 +50,8 @@ EXPECTED_PUBLIC_API: frozenset[str] = frozenset(
         "create_swarm_agent",  # Phase 3
         "load_mcp_tools",
         "get_checkpointer",
-        # Runtime helpers — Phase 1
+        # Runtime helpers — Phase 1; resume dropped in 0.3.0a1 trade-off audit
         "replay",
-        "resume",
         # Deployment surface
         "DeploymentAdapter",
         "DirectAdapter",

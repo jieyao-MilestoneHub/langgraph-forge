@@ -58,7 +58,7 @@ provided by the package:
   *trigger* lives in the slot; the *transition* is enforced by the
   graph.
 - **Persistence** — `BaseCheckpointSaver` plumbing, `ThreadConfig`,
-  `replay` / `resume`.
+  `replay`.
 - **Static interrupts** — declared at compile time, enforced by
   `compile()`.
 
@@ -146,7 +146,7 @@ Things that are explicitly **your code**, not the package's:
 - **Observability** — LangSmith, OpenTelemetry, custom callbacks.
   The compiled graph from any factory accepts the LangChain callback
   pattern; wire it yourself.
-- **Authentication / authorisation / multi-tenancy / billing** — out
+- **Authentication / authorisation / multi-tenancy** — out
   of scope, full stop. If the package starts knowing about user
   identities or quota buckets, the boundary is broken.
 - **Streaming behaviour** — `graph.astream(...)` is already the
