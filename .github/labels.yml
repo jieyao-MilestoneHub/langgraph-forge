@@ -1,0 +1,76 @@
+# Source of truth for the project's GitHub labels.
+#
+# Apply with the gh helper documented in MAINTAINERS.md, or with
+# any third-party syncer (e.g. EndBug/label-sync) that consumes this
+# format. Do NOT edit labels in the GitHub UI without updating this
+# file -- the file is canonical.
+#
+# Color is a 6-digit hex without leading "#".
+
+- name: bug
+  color: "d73a4a"
+  description: Something broke that was working, or a clear spec violation.
+
+- name: enhancement
+  color: "0075ca"
+  description: New feature or improvement.
+
+- name: documentation
+  color: "0052cc"
+  description: Docs, README, CONTRIBUTING, MAINTAINERS, or in-code docstrings.
+
+- name: ci
+  color: "ededed"
+  description: GitHub Actions, pre-commit, or release pipeline.
+
+- name: dependencies
+  color: "0366d6"
+  description: Dependency bumps (also auto-applied by Dependabot).
+
+- name: security
+  color: "ee0701"
+  description: Security-relevant; read SECURITY.md before discussing publicly.
+
+- name: provider
+  color: "5319e7"
+  description: New LLM provider option (--provider / templates/providers/).
+
+- name: adapter
+  color: "5319e7"
+  description: New deployment adapter (--deploy / deploy/ or out-of-tree).
+
+- name: good first issue
+  color: "7057ff"
+  description: Newcomer-friendly; under ~2 hours of work, no deep codebase knowledge needed.
+
+- name: help wanted
+  color: "008672"
+  description: Maintainer wants external help on this; assignable on request.
+
+- name: triage
+  color: "fbca04"
+  description: New issue, not yet classified by a maintainer.
+
+- name: blocked
+  color: "b60205"
+  description: Cannot progress until an upstream change or external dependency lands.
+
+- name: needs-repro
+  color: "fbca04"
+  description: Author needs to provide a minimal reproduction before triage continues.
+
+- name: wontfix
+  color: "ffffff"
+  description: Closed without action, with a written reason in the issue thread.
+
+- name: duplicate
+  color: "cfd3d7"
+  description: Tracked elsewhere; closed with a link to the canonical issue.
+
+- name: question
+  color: "d876e3"
+  description: User question rather than a bug or feature request.
+
+- name: discussion
+  color: "f9d0c4"
+  description: Open-ended thread; consider migrating to GitHub Discussions.
