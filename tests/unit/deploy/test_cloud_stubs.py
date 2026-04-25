@@ -101,3 +101,28 @@ class TestCloudStubTemplateFragmentPath:
         fragment = cls().template_fragment()
 
         assert fragment.name == fragment_name
+
+
+class TestCloudStubsDeclareStubFlag:
+    """Stub status is structural, not a hardcoded list in the CLI.
+
+    Each cloud adapter declares ``is_stub: ClassVar[bool] = True`` so the
+    CLI (and any third-party introspection) can detect "scaffolding works
+    but runtime calls raise NotImplementedError" without reading docs.
+    """
+
+    @pytest.mark.parametrize(("_", "cls", "__", "___"), CLOUD_ADAPTERS)
+    def test_class_attr_is_true(
+        self,
+        _: str,
+        cls: type[Any],
+        __: str,
+        ___: str,
+    ) -> None:
+        assert cls.is_stub is True
+
+    def test_direct_adapter_not_marked_as_stub(self) -> None:
+        from langgraph_forge.deploy.direct import DirectAdapter
+
+        # DirectAdapter does not declare is_stub; getattr returns False.
+        assert getattr(DirectAdapter, "is_stub", False) is False
