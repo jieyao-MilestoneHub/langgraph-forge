@@ -66,6 +66,14 @@ postgres = [
 all = [
   "langgraph-forge[bedrock,vertex,azure,sqlite,postgres]",
 ]
+
+# PEP 735 dependency groups -- consumed by `uv sync --dev` (default) and
+# every modern dependency manager. Kept separate from
+# [project.optional-dependencies] so dev tooling does NOT leak into the
+# published package metadata: `pip install langgraph-forge[dev]` is no
+# longer a thing, which is correct -- end users have no business
+# pulling ruff / pyright / pytest into their environment.
+[dependency-groups]
 dev = [
   "ruff>=0.6.9",
   "pyright>=1.1.380",
@@ -153,6 +161,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["PLR2004"]  # magic values in tests are fine
+# Lazy imports are the design intent of this module; PLC0415 enforced
+# elsewhere still trips review.
+"src/langgraph_forge/builders/checkpoint.py" = ["PLC0415"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["langgraph_forge"]
