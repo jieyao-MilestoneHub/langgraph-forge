@@ -1,4 +1,11 @@
-"""Default graph state schema for langgraph-forge agents."""
+"""Graph state schemas.
+
+Per the project boundary (Line 2 in
+``docs/explanation/initialization-boundary.md``), state types ship
+**only** the channels each topology itself needs to function. Domain
+fields (``task``, ``intent``, ``constraints``, ``risk_level``,
+``artifacts``) are user code -- subclass the appropriate base.
+"""
 
 from __future__ import annotations
 
@@ -19,3 +26,18 @@ class ForgeState(TypedDict):
     """
 
     messages: Annotated[list, add_messages]
+
+
+class SwarmState(ForgeState):
+    """Swarm-pattern state schema.
+
+    Adds ``active_agent`` to track which specialist currently holds
+    the turn. Handoff tools (``transfer_to_<peer>``) update this
+    field; the swarm router uses its value to dispatch the next
+    invocation.
+
+    Subclasses inherit ``messages`` from :class:`ForgeState` and may
+    add domain channels alongside ``active_agent``.
+    """
+
+    active_agent: str | None
