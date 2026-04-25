@@ -14,10 +14,12 @@ class TestForgeStateShape:
         assert "messages" in ForgeState.__annotations__
 
     def test_messages_reducer_is_add_messages(self) -> None:
-        # ForgeState.messages is Annotated[list, add_messages]; the reducer
-        # sits in the annotation metadata returned by typing.get_args.
-        annotation = ForgeState.__annotations__["messages"]
-        metadata = typing.get_args(annotation)
+        # ForgeState.messages is Annotated[list, add_messages]. With
+        # `from __future__ import annotations` the raw __annotations__
+        # dict holds string forms, so resolve via typing.get_type_hints
+        # with include_extras=True to recover the Annotated metadata.
+        hints = typing.get_type_hints(ForgeState, include_extras=True)
+        metadata = typing.get_args(hints["messages"])
 
         assert add_messages in metadata
 
