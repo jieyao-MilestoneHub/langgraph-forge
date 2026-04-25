@@ -41,3 +41,19 @@ class SwarmState(ForgeState):
     """
 
     active_agent: str | None
+
+
+class RouterState(ForgeState):
+    """Router-pattern state schema.
+
+    Adds ``route`` to record which specialist the classifier dispatched
+    to. The classifier writes this field; the conditional edge reads it
+    to pick the next node. Persisting ``route`` in state (rather than
+    an internal-only variable) makes replay debugging easy: a checkpoint
+    snapshot shows exactly which specialist ran.
+
+    Subclasses inherit ``messages`` from :class:`ForgeState` and may
+    add domain channels alongside ``route``.
+    """
+
+    route: str | None
