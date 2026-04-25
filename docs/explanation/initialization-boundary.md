@@ -5,6 +5,86 @@ deliberately does not do, and how to tell the difference. Read this
 before adding a new public symbol; refer to it during PR review when
 asking "is this in scope?".
 
+## The principle: domain reasoning slots vs. infrastructure
+
+Domain knowledge — "an accountant knowing how to recognise
+depreciation" — lives in designated reasoning slots inside a graph.
+The accountant's expertise can be **live** (a human, or an LLM,
+thinking about a specific case) or **encoded** (a written-down rule,
+a deterministic algorithm). Either way, when the accountant uses
+Excel to actually carry out the work, Excel is a professional tool —
+it does not improvise. The package is "Excel for LangGraph multi-
+agent flows": it provides the deterministic infrastructure for
+running domain reasoning reliably, and it leaves both the reasoning
+itself **and the choice of how to encode that reasoning** to the
+user.
+
+This translates into three lines.
+
+### Line 1 — Domain reasoning lives in designated slots
+
+The package marks specific positions in each pattern as **reasoning
+slots**: places where domain knowledge needs to be applied to
+unfamiliar input. Inside each slot the user picks the encoding:
+
+| Slot | Live LLM (default) | Encoded code |
+|---|---|---|
+| Specialist node (every pattern) | ReAct worker via `create_react_agent` | `SpecialistSpec.subgraph` — any compiled `StateGraph`, including a single deterministic node |
+| Supervisor classifier (`supervisor`, `hierarchical`) | The supervisor LLM that picks the next specialist each turn | Not provided — composing a deterministic supervisor lives in `custom` |
+| Swarm handoff trigger (`swarm`) | Each active agent's LLM decides via `transfer_to_<peer>` tool calls | Not provided — same reasoning |
+| Router classifier (`router`) | A classifier LLM | A `Callable[[State], str]` returning the route name |
+
+The package **never bakes domain assumptions** into the slots
+themselves. A specialist named `accountant` does not ship with
+accounting knowledge; that knowledge is the user's prompt, the user's
+tools, or the user's encoded subgraph. The `name` is a routing key,
+not a behaviour declaration.
+
+### Line 2 — Infrastructure around the slots is deterministic code
+
+Everything that is **not** a reasoning slot is deterministic Python
+provided by the package:
+
+- **Graph topology** — built by the pattern factory; cannot be
+  overridden at runtime by a slot's LLM beyond the handoff
+  mechanism the topology declares.
+- **State channels** — typed `TypedDict` schemas with explicit
+  reducers. Reads and writes are structured, never free-form prose.
+- **Tool execution dispatch** — the slot's LLM picks *which* tool
+  by name; the dispatch and argument validation are framework-
+  deterministic.
+- **Handoff mechanics** — tool-calls (`delegate_to_X`,
+  `transfer_to_X`), `Command(goto=...)`, conditional edges. The
+  *trigger* lives in the slot; the *transition* is enforced by the
+  graph.
+- **Persistence** — `BaseCheckpointSaver` plumbing, `ThreadConfig`,
+  `replay` / `resume`.
+- **Static interrupts** — declared at compile time, enforced by
+  `compile()`.
+
+A slot's LLM never gets to decide "skip the checkpoint", "violate
+the topology", "forge a state update outside its declared
+channels", or "talk to another slot directly". Those would be
+infrastructure decisions, and infrastructure is the framework's
+responsibility.
+
+### Line 3 — Communication between slots is structured
+
+Agents never talk to each other in free-form prose passed by name.
+Communication channels are:
+
+- **Typed state channels** — read/write through the schema's
+  declared fields, merged through their declared reducers.
+- **Tool calls** — `delegate_to_X` (supervisor), `transfer_to_X`
+  (swarm), or user-defined handoff tools.
+- **`langgraph.types.Command`** — for explicit graph transitions
+  inside custom or router code paths.
+
+The package does not provide a message bus, pub/sub, fan-out, or any
+unstructured prose-passing between agents. Production message
+infrastructure (NATS, Kafka, SQS) is the user's external concern;
+within a single graph, structured state is the only legal channel.
+
 ## The package's job
 
 The package's value proposition is **"compose, don't reimplement"**.
