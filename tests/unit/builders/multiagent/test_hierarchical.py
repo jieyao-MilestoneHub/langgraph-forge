@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from unittest.mock import MagicMock, patch, sentinel
 
+import pytest
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
 from langgraph_forge.builders.multiagent.hierarchical import (
@@ -14,6 +16,19 @@ from langgraph_forge.core.specs import (
     SpecialistSpec,
     TeamSpec,
 )
+
+
+@pytest.fixture(autouse=True)
+def _mock_get_model() -> Iterator[MagicMock]:
+    # The hierarchical factory calls get_model on each team's
+    # supervisor_model. Without a real provider installed, init_chat_model
+    # would fail. Auto-mock at the hierarchical module's import boundary
+    # so every test in this file gets the same harmless stub.
+    with patch(
+        "langgraph_forge.builders.multiagent.hierarchical.get_model",
+        return_value=sentinel.team_chat_model,
+    ) as mock:
+        yield mock
 
 
 def _model() -> ModelSpec:
